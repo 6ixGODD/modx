@@ -1,0 +1,4 @@
+server:
+  appname: modx-test
+  description: MODX test server
+  version: 1.0.0

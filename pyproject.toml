@@ -1,0 +1,43 @@
+[project]
+name = "modx"
+version = "0.1.0"
+description = ""
+authors = [
+    { name = "BoChen SHEN", email = "6goddddddd@gmail.com" }
+]
+readme = "README.md"
+requires-python = "^3.11,<3.13"
+dependencies = [
+    "openai (>=1.101.0,<2.0.0)",
+    "argon2-cffi (>=25.1.0,<26.0.0)",
+    "fastapi (>=0.116.1,<0.117.0)",
+    "pydantic (>=2.11.7,<3.0.0)",
+    "pydantic-settings (>=2.10.1,<3.0.0)",
+    "dependency-injector (>=4.48.1,<5.0.0)",
+    "prometheus-client (>=0.22.1,<0.23.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "uvicorn[standard] (>=0.35.0,<0.36.0)",
+    "watchdog (>=6.0.0,<7.0.0)",
+    "redis (>=6.4.0,<7.0.0)",
+    "pyfiglet (>=1.0.4,<2.0.0)",
+    "rich (>=14.1.0,<15.0.0)",
+    "psutil (>=7.0.0,<8.0.0)",
+    "beanie (>=2.0.0,<3.0.0)",
+    "httpx[http2] (>=0.28.1,<0.29.0)",
+    "dotenv (>=0.9.9,<0.10.0)"
+]
+
+
+[project.optional-dependencies]
+test = [
+    "pytest (>=8.4.1,<9.0.0)",
+    "pytest-asyncio (>=1.1.0,<2.0.0)",
+    "mypy (>=1.17.1,<2.0.0)"
+]
+
+[project.scripts]
+module = "module.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
