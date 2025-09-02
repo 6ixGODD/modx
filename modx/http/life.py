@@ -34,6 +34,7 @@ class Lifespan(
         return self
 
     async def __aenter__(self):
+        self.logger.info('Starting up ModX...')
         await self.http_client.init()
         self.display.display_startup()
 
@@ -43,6 +44,7 @@ class Lifespan(
         exc_value: BaseException | None,
         traceback: types.TracebackType | None
     ):
+        self.logger.info('Shutting down ModX...')
         await self.http_client.close()
         self.display.display_shutdown(
             exc_type,

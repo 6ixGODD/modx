@@ -6,5 +6,4 @@ import pydantic as pydt
 
 
 class AuthConfig(pydt.BaseModel):
-    pass
-
+    unprotected_routes: t.List[str] = []

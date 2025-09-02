@@ -117,14 +117,12 @@ class Display:
         exc_value: BaseException | None = None,
     ) -> None:
         if exc_value:
-            if isinstance(exc_value, KeyboardInterrupt):
-                title, style, subtitle = "🛑 INTERRUPTED", "yellow", "你赢了"
-            else:
-                title, style, subtitle = (
-                    "💀 CRASHED", "red",
-                    f"{exc_type.__name__ if exc_type else 'Unknown'}")
+            title, style, subtitle = (
+                "💀 CRASHED", "red",
+                f"{exc_type.__name__ if exc_type else 'Unknown'}"
+            )
         else:
-            title, style, subtitle = "☠️ SHUTDOWN", "green", "寄了"
+            title, style, subtitle = "SHUTDOWN", "green", "寄了。"
 
         art = pyfiglet.figlet_format("BYE", font="small")
         self.console.print(
@@ -176,7 +174,17 @@ class Display:
         if not exc_value:
             msg, style = "Server exited peacefully (this time).", "green"
         else:
-            msg, style = "真寄了", "yellow"
+            msg = random.choice(
+                [
+                    "异常退出，不出所料。",
+                    "挂了。",
+                    "报错？习惯就好。",
+                    "崩了，但还能更糟。",
+                    "系统罢工，挺正常。",
+                    "寄了，但不意外。",
+                ]
+            )
+            style = "grey70"
         self.console.print(
             rpanel.Panel(
                 ralign.Align.center(rtext.Text(msg, style=f"bold {style}")),

@@ -22,10 +22,7 @@ class Models(
     def __init__(self, config: ModXConfig, logger: Logger):
         self.config = config
         self.templates = dict[str, j2.Template]()
-        self.jinja_env = j2.Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-        )
+        self.jinja_env = j2.Environment(trim_blocks=True, lstrip_blocks=True)
         WatchedResource.__init__(
             self,
             fpath=config.models_file,

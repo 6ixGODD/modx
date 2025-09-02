@@ -18,12 +18,12 @@ from modx.chatbot.types.completion_chunk import (
 )
 from modx.chatbot.types.message import Messages
 from modx.chatbot.types.stream import AsyncStream
-from modx.chatbot.types.usage import Usage
 from modx.client.http import HTTPClient
 from modx.config import ModXConfig
 from modx.helpers.mixin import LoggingTagMixin
 from modx.logger import Logger
 from modx.resources.models import Models
+import modx.exceptions as exc
 
 
 def map_finish_reason(
@@ -79,7 +79,7 @@ class ChatCompletion(Chatbot, LoggingTagMixin):
         chatcmpl_id = chatcmpl_id or utils.gen_id(pref=const.IDPrefix.CHATCMPL)
         created = int(time.time())
         if model not in self.models:
-            raise ValueError(f"Model '{model}' not found")
+            raise exc.NotFoundError(f'Model {model} not found')
         model_def = self.models[model]
         sysprompt = self.models.render_safe(model, **kwargs)
         message_list = ([
@@ -125,7 +125,7 @@ class ChatCompletion(Chatbot, LoggingTagMixin):
             stream=stream,
         )
         if stream:
-            def chunk_mapper(
+            def map_chunk(
                 chunk: openai_chat.ChatCompletionChunk
             ) -> CompletionChunk:
                 if chunk.usage:
@@ -167,7 +167,7 @@ class ChatCompletion(Chatbot, LoggingTagMixin):
                         delta=CompletionChunkDelta(),
                     )
 
-            astream = AsyncStream(completion, mapper=chunk_mapper)
+            astream = AsyncStream(completion, mapper=map_chunk)
 
             if cache:
                 full_content = ''
@@ -229,10 +229,4 @@ class ChatCompletion(Chatbot, LoggingTagMixin):
                 finish_reason=map_finish_reason(
                     completion.choices[0].finish_reason  # type: ignore
                 ),
-                usage=Usage(
-                    # TODO: Usage handling. Should design a usage rule first
-                    prompt_tokens=completion.usage.prompt_tokens,
-                    completion_tokens=completion.usage.completion_tokens,
-                    total_tokens=completion.usage.total_tokens
-                )
             )

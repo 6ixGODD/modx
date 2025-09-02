@@ -9,9 +9,6 @@ class LoggingConfig(pydt.BaseModel):
     colorize: bool = True
     """Whether to apply ANSI color formatting. Defaults to True."""
 
-    request_id_header: str = "X-Request-ID"
-    """Header name for request ID. Defaults to 'X-Request-ID'."""
-
     trace_id_header: str = "X-Trace-ID"
     """Header name for trace ID. Defaults to 'X-Trace-ID'."""
 

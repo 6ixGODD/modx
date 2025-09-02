@@ -23,12 +23,12 @@ class ICompatService(t.Protocol):
         self,
         messages: MessagesObject,
         *,
-        chatcmpl_id: ChatCompletionID,
+        chatcmpl_id: ChatCompletionID | None = None,
         model: ModelID,
         stream: bool = True,
         max_completion_tokens: int | None = None,
         cache: bool = True,
-    ) -> Completion | t.AsyncIterable[CompletionChunk]: ...
+    ) -> Completion | AsyncStream[CompletionChunk]: ...
 
     async def list_models(self) -> ModelList: ...
 
@@ -50,7 +50,7 @@ class CompatService(BaseService):
         self,
         messages: MessagesObject,
         *,
-        chatcmpl_id: ChatCompletionID,
+        chatcmpl_id: ChatCompletionID | None = None,
         model: ModelID,
         stream: bool = True,
         max_completion_tokens: int | None = None,
@@ -62,8 +62,8 @@ class CompatService(BaseService):
             stream=stream,
             max_completion_tokens=max_completion_tokens,
             cache=cache,
-            cache_key=chatcmpl_id.id,
-            chatcmpl_id=chatcmpl_id if cache else None
+            cache_key=chatcmpl_id.id if cache and chatcmpl_id else None,
+            chatcmpl_id=chatcmpl_id.id if cache and chatcmpl_id else None
         )
 
     async def list_models(self) -> ModelList:

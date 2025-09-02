@@ -18,18 +18,18 @@ class BaseModel(pydt.BaseModel):
 
 
 class OpenAIClientConfig(BaseModel):
-    api_key: str | None = None
+    api_key: str
     organization: str | None = None
     project: str | None = None
     timeout: float | None = None
-    base_url: str | None = None
+    base_url: str
     max_retries: int = 3
     default_headers: t.Mapping[str, str] | None = None
     default_query: t.Mapping[str, object] | None = None
 
 
 class RuntimeConfig(BaseModel):
-    model: str | None = None
+    model: str
     max_completion_tokens: int | None = None
     temperature: float | None = None
     presence_penalty: float | None = None
@@ -54,10 +54,14 @@ class ModelDefinition(BaseModel):
     )
 
     client: OpenAIClientConfig = pydt.Field(
-        default_factory=OpenAIClientConfig
+        ...,
+        description="Configuration for OpenAI client"
     )
 
-    runtime: RuntimeConfig = pydt.Field(default_factory=RuntimeConfig)
+    runtime: RuntimeConfig = pydt.Field(
+        ...,
+        description="Runtime configuration for model"
+    )
 
 
 class Model(te.TypedDict, total=False):

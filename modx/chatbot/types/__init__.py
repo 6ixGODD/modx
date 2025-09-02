@@ -35,6 +35,8 @@ class BaseSchema:
         )
         return f"{self.__class__.__name__}({attrs})"
 
+    __str__ = __repr__
+
     def __getstate__(self):
         return tuple(getattr(self, slot, None) for slot in self.__slots__)
 

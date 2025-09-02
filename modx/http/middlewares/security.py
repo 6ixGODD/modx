@@ -34,7 +34,6 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
-        self.logger = logger
         self.context = context
         self.config = config
         self.enforce_https = self.config.enforce_https

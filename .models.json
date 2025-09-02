@@ -1,0 +1,15 @@
+{
+  "persomna": {
+    "id": "persomna",
+    "created": 1756718685,
+    "owned_by": "modx",
+    "prompt_path": "prompts/default.j2",
+    "client": {
+      "api_key": "sk-51e2c09e6aa244c5acc6c39907c3356a",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    },
+    "runtime": {
+      "model": "qwen-max-latest"
+    }
+  }
+}

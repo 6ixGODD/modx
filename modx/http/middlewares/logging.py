@@ -7,9 +7,11 @@ import typing as t
 
 import starlette.types as types
 
+import modx.constants as const
 import modx.exceptions as exc
 import modx.utils.ansi as ansi_utils
 from modx.config.middleware.logging import LoggingConfig
+from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
 from modx.http.middlewares import BaseMiddleware
 from modx.logger import Logger
@@ -35,19 +37,20 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
 
     # HTTP Method color mapping
     METHOD_COLORS: t.ClassVar[t.Dict[str, ansi_utils.ANSIFormatter.FG]] = {
-        "GET": ansi_utils.ANSIFormatter.FG.GREEN,
-        "POST": ansi_utils.ANSIFormatter.FG.BLUE,
-        "PUT": ansi_utils.ANSIFormatter.FG.YELLOW,
-        "PATCH": ansi_utils.ANSIFormatter.FG.MAGENTA,
-        "DELETE": ansi_utils.ANSIFormatter.FG.RED,
-        "OPTIONS": ansi_utils.ANSIFormatter.FG.CYAN,
-        "HEAD": ansi_utils.ANSIFormatter.FG.BRIGHT_GREEN,
+        'GET': ansi_utils.ANSIFormatter.FG.GREEN,
+        'POST': ansi_utils.ANSIFormatter.FG.BLUE,
+        'PUT': ansi_utils.ANSIFormatter.FG.YELLOW,
+        'PATCH': ansi_utils.ANSIFormatter.FG.MAGENTA,
+        'DELETE': ansi_utils.ANSIFormatter.FG.RED,
+        'OPTIONS': ansi_utils.ANSIFormatter.FG.CYAN,
+        'HEAD': ansi_utils.ANSIFormatter.FG.BRIGHT_GREEN,
     }
 
     def __init__(
         self,
         app: types.ASGIApp,
         logger: Logger,
+        context: Context,
         config: LoggingConfig,
     ):
         BaseMiddleware.__init__(self, app)
@@ -55,13 +58,11 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
 
         self.config = config
         self.colorize = self.config.colorize
-        self.request_id_header = self.config.request_id_header.lower().encode()
+        self.context = context
         self.trace_id_header = self.config.trace_id_header.lower().encode()
         self.span_id_header = self.config.span_id_header.lower().encode()
         self.parent_span_id_header = (self.config.
                                       parent_span_id_header.lower().encode())
-        self.log_headers = self.config.log_headers
-        self.log_query_string = self.config.log_query_string
         self.exclude_paths = self.config.exclude_paths or set()
 
         ansi_utils.ANSIFormatter.enable(self.config.colorize)
@@ -90,10 +91,10 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         headers = scope.get('headers', [])
 
         # Extract identifiers
-        request_id = self._extract_header_value(
-            headers,
-            self.request_id_header
-        )
+        if const.ContextKey.REQUEST_ID in self.context:
+            request_id = self.context[const.ContextKey.REQUEST_ID]
+        else:
+            request_id = "unknown"
         trace_id = self._extract_header_value(headers, self.trace_id_header)
         span_id = self._extract_header_value(headers, self.span_id_header)
         parent_span_id = self._extract_header_value(
@@ -157,7 +158,14 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
             "method": method,
             "path": path,
             "client": client,
-            "request_id": request_id
+            "request_id": request_id,
+            "trace_id": trace_id,
+            "span_id": span_id,
+            "parent_span_id": parent_span_id,
+            "user_agent": self._extract_header_value(
+                headers,
+                b'user-agent'
+            )
         }
         if trace_id:
             log_ctx["trace_id"] = trace_id
@@ -166,12 +174,12 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         if parent_span_id:
             log_ctx["parent_span_id"] = parent_span_id
 
-        if self.log_query_string and scope.get('query_string'):
+        if self.config.log_query_string and scope.get('query_string'):
             log_ctx["query_string"] = scope['query_string'].decode(
                 'utf-8',
                 'replace'
             )
-        if self.log_headers:
+        if self.config.log_headers:
             log_ctx["headers"] = {
                 k.decode('utf-8', 'replace'): v.decode('utf-8', 'replace')
                 for k, v in headers}
@@ -179,9 +187,7 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         self.logger.with_context(**log_ctx).info(request_log)
 
         # Response wrapper
-        async def send_wrapper(
-            message: t.MutableMapping[str, t.Any]
-        ) -> None:
+        async def send_wrapper(message: t.MutableMapping[str, t.Any]) -> None:
             if message["type"] == "http.response.start":
                 status_code = message["status"]
                 duration_ms = round((time.time() - start_time) * 1000, 2)

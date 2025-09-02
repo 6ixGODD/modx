@@ -160,6 +160,48 @@ class InvalidParametersError(BadRequestError):
         return cls(msg, params=params)
 
 
+class UnauthorizedError(RuntimeException):
+    def __init__(
+        self,
+        msg: str = http.HTTPStatus.UNAUTHORIZED.phrase, /,
+        *,
+        code: const.BusinessCode = const.BusinessCode.UNAUTHORIZED,
+    ):
+        super().__init__(
+            msg,
+            code=code,
+            status_code=http.HTTPStatus.UNAUTHORIZED.value,
+        )
+
+
+class ForbiddenError(RuntimeException):
+    def __init__(
+        self,
+        msg: str = http.HTTPStatus.FORBIDDEN.phrase, /,
+        *,
+        code: const.BusinessCode = const.BusinessCode.FORBIDDEN,
+    ):
+        super().__init__(
+            msg,
+            code=code,
+            status_code=http.HTTPStatus.FORBIDDEN.value,
+        )
+
+
+class NotFoundError(RuntimeException):
+    def __init__(
+        self,
+        msg: str = http.HTTPStatus.NOT_FOUND.phrase, /,
+        *,
+        code: const.BusinessCode = const.BusinessCode.NOT_FOUND,
+    ):
+        super().__init__(
+            msg,
+            code=code,
+            status_code=http.HTTPStatus.NOT_FOUND.value,
+        )
+
+
 class ServiceUnavailableError(RuntimeException):
     def __init__(
         self,

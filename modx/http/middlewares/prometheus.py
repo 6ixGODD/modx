@@ -35,7 +35,6 @@ class PrometheusMiddleware(BaseMiddleware, LoggingTagMixin):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
-        self.logger = logger
         self.context = context
         self.config = config
         self.metrics_path = self.config.metrics_path

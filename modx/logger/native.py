@@ -242,9 +242,9 @@ class ContextFormatter(logging.Formatter):
         plain_level = f"{record.levelname:<8}"
         prefix_len = self._get_prefix_length(
             plain_timestamp,
-            "somnmind            ",
+            "somnmind" + 32 * " ",  # Max 40-char logger
             plain_level
-        )  # Use consistent 20-char logger
+        )  # Use consistent 40-char logger
         indent = " " * (prefix_len - 3)
 
         # Handle multiline messages

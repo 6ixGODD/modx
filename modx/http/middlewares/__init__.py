@@ -43,7 +43,8 @@ def register_middleware(
     app.add_middleware(
         LoggingMiddleware,  # type: ignore[arg-type]
         logger=logger,
-        config=middleware_config.logging
+        context=context,
+        config=middleware_config.logging,
     )
 
     from modx.http.middlewares.auth import AuthMiddleware
@@ -51,6 +52,7 @@ def register_middleware(
         AuthMiddleware,  # type: ignore[arg-type]
         logger=logger,
         context=context,
+        config=middleware_config.auth,
         auth_interface=auth_interface,
     )
 

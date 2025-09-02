@@ -34,7 +34,6 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
-        self.logger = logger
         self.context = context
         self.config = config.middleware.trace
         self.trace_id_header = self.config.trace_id_header

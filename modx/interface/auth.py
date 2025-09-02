@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import typing as t
 
+import modx.exceptions as exc
 from modx.interface import BaseInterface
 from modx.logger import Logger
 from modx.service.auth import IAuthService
@@ -9,7 +10,7 @@ from modx.service.auth import IAuthService
 
 @t.runtime_checkable
 class IAuthInterface(t.Protocol):
-    async def authenticate(self, api_key: str) -> bool: ...
+    async def authenticate(self, api_key: str) -> None: ...
 
 
 class AuthInterface(BaseInterface):
@@ -22,5 +23,6 @@ class AuthInterface(BaseInterface):
         super().__init__(logger)
         self.auth_service = auth_service
 
-    async def authenticate(self, api_key: str) -> bool:
-        return await self.auth_service.authenticate(api_key)
+    async def authenticate(self, api_key: str) -> None:
+        if not await self.auth_service.authenticate(api_key):
+            raise exc.UnauthorizedError("Invalid API key provided.")

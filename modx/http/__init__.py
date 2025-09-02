@@ -7,7 +7,12 @@ import uvicorn
 
 from modx.config import ModXConfig
 from modx.context import Context
-from modx.http import exc_handler, life, middlewares, routers
+from modx.http import (
+    exc_handler,
+    life,
+    middlewares,
+    routers,
+)
 from modx.interface.auth import IAuthInterface
 from modx.logger import Logger
 

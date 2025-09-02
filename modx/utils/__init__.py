@@ -50,7 +50,7 @@ def singleton(cls: t.Type[_C]) -> t.Callable[..., _C]:
 def gen_id(
     pref: str = "",
     suf: str = "",
-    without_hyphen: bool = False
+    without_hyphen: bool = True
 ) -> str:
     uuid_str = str(uuid.uuid4())
     if without_hyphen:

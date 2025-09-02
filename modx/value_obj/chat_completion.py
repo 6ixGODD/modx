@@ -7,12 +7,12 @@ import pydantic as pydt
 import modx.constants as const
 import modx.exceptions as exc
 import modx.utils as utils
-from modx.chatbot.types.message import Messages
+from modx.chatbot.types.message import Message
 from modx.value_obj import BaseValueObject
 
 
 class MessagesObject(BaseValueObject):
-    messages: Messages
+    messages: t.List[Message]
 
     @pydt.model_validator(mode='after')
     def val_messages(self) -> t.Self:

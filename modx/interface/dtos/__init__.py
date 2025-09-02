@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import typing as t
 
 import pydantic as pydt
@@ -95,7 +93,7 @@ class ErrorResponse(Response[exc.ExceptionDetails]):
                       const.BusinessCode.INTERNAL_ERROR,
                       const.BusinessCode.INVALID_PARAMS]
         )
-    ] = const.BusinessCode.UNKNOWN_ERROR
+    ] = const.BusinessCode.INTERNAL_ERROR
 
     data: t.Annotated[
         exc.ExceptionDetails,
@@ -105,8 +103,8 @@ class ErrorResponse(Response[exc.ExceptionDetails]):
             examples=[{"message": "An error occurred", "code": 500}]
         )
     ] = exc.ExceptionDetails(
-        message="An unknown error occurred. Please try again later, "
-                "or record the `x-trace-id` response header and report to "
+        message="An internal server error occurred. Please try again later, "
+                "or record the `x-request-id` response header and report to "
                 "the administrator",
     )
 

@@ -55,6 +55,7 @@ class InfrastructureContainer(containers.DeclarativeContainer):
         logger=logger,
         http_client=http_client,
         cache=cache,
+        config=config,
     )
 
 

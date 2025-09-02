@@ -28,7 +28,7 @@ class Completion(BaseSchema):
     finish_reason: t.Literal['stop', 'length', 'content_filter']
     created: int
     model: str
-    usage: Usage
+    usage: Usage | None
 
     __slots__ = (
         "id",
@@ -47,7 +47,7 @@ class Completion(BaseSchema):
         finish_reason: t.Literal['stop', 'length', 'content_filter'],
         created: int,
         model: str,
-        usage: Usage,
+        usage: Usage | None = None,
     ) -> None:
         self.id = id
         self.message: CompletionMessage = message
