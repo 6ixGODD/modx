@@ -1,0 +1,122 @@
+server:
+  appname: ModX Server
+  description: :)
+  version: 1.0.0
+  http_host: 0.0.0.0
+  http_port: 8000
+  route_prefix: '/v1'
+  openapi_route: '/openapi.json'
+  debug: false
+  workers: 1
+  ssl_keyfile: ~
+  ssl_certfile: ~
+  ssl_keyfile_password: ~
+  ssl_version: ~
+  ssl_cert_reqs: ~
+  ssl_ca_certs: ~
+  ssl_ciphers: ~
+  headers: ~
+  h11_max_incomplete_event_size: ~
+
+chatbot:
+  cache_ttl: 218000
+
+logging:
+  backend: native
+  targets:
+    - logname: stdout
+      loglevel: info
+    - logname: stderr
+      loglevel: error
+    - logname: ./logs/app.log
+      loglevel: info
+      rotation:
+        size_based:
+          max_size: 10
+          backup_count: 5
+        time_based: ~
+          # interval: 1  # hours
+        # backup_count: 5
+
+middleware:
+  auth:
+    unprotected_routes: [ ]
+  logging:
+    colorize: true
+    trace_id_header: X-Trace-Id
+    span_id_header: X-Span-Id
+    parent_span_id_header: X-Parent-Span-Id
+    log_headers: true
+    log_query_string: true
+    exclude_paths: [ ]
+  security:
+    enabled: true
+    enforce_https: false
+    hsts_max_age: 31536000
+    add_content_type_options: true
+    cache_control: no-cache, no-store, must-revalidate
+    add_request_id: true
+    add_api_version: true
+    api_version: 1.0.0
+  trace:
+    enabled: false
+    trace_id_header: X-Trace-Id
+    span_id_header: X-Span-Id
+    parent_span_id_header: X-Parent-Span-Id
+    log_trace_info: true
+  cors:
+    enabled: true
+    allow_origins: [ '*' ]
+    allow_credentials: true
+    allow_methods: [ '*' ]
+    allow_headers: [ '*' ]
+    allow_origin_regex: ~
+    expose_headers: [ ]
+    max_age: 600
+  gzip:
+    enabled: true
+    minimum_size: 1024
+    compresslevel: 9
+
+prometheus:
+  enabled: true
+  metrics_path: /metrics
+  track_in_progress: true
+  buckets: ~
+  exclude_paths: [ ]
+  custom_labels: ~
+  enable_exemplars: false
+  # app_name: modx
+  # app_version: 1.0.0
+
+cache:
+  split: ':'
+  pref: 'modx:'
+  default_ttl: 3600
+  negative_ttl: 60
+  redis:
+    host: localhost
+    port: 6379
+    db: 0
+    password: ~
+    socket_timeout: 5
+    socket_connect_timeout: 5
+    retry_on_timeout: false
+    max_connections: 10
+    health_check_interval: 30
+    ssl: false
+    ssl_cert_reqs: required
+    secure_serialization: false
+    # secret_key:
+
+http_client:
+  timeout: 10
+  max_connections: 100
+  max_keepalive_connections: 20
+  max_redirects: 10
+  http2: true
+  trust_env: true
+  user_agent: ModX-Client/1.0.0
+
+keys_file: ./.keys
+models_file: ./.models.json

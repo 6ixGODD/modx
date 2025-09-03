@@ -86,3 +86,7 @@ dmypy.json
 
 # LSP config files
 pyrightconfig.json
+
+# Config files
+.config.yml
+.models.json

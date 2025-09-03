@@ -1,0 +1,28 @@
+{
+  "model1": {
+    "id": "model1",
+    "created": 1756718685,
+    "owned_by": "openai",
+    "prompt_path": "prompts/default.j2",
+    "client": {
+      "api_key": "sk-your-api-key",
+      "base_url": "https://api.openai.com/v1"
+    },
+    "runtime": {
+      "model": "gpt-4o"
+    }
+  },
+    "model2": {
+    "id": "model2",
+    "created": 1756718685,
+    "owned_by": "openai",
+    "prompt_path": "prompts/default.j2",
+    "client": {
+      "api_key": "sk-your-api-key",
+      "base_url": "https://api.openai.com/v1"
+    },
+    "runtime": {
+      "model": "gpt-5"
+    }
+  }
+}

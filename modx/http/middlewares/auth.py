@@ -18,7 +18,11 @@ from modx.logger import Logger
 
 def extract_route(path: str) -> str:
     match = re.search(r'(?:^/)?(?:api/)?v\d+(?:\.\d+)?(/.*)', path)
-    return match.group(1) if match else ''
+    if match:
+        return match.group(1)
+    if path.startswith('/api/'):
+        return path[4:]
+    return path
 
 
 class AuthMiddleware(BaseMiddleware, LoggingTagMixin):
