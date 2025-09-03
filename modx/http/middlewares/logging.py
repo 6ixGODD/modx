@@ -7,14 +7,13 @@ import typing as t
 
 import starlette.types as types
 
-import modx.constants as const
-import modx.exceptions as exc
-import modx.utils.ansi as ansi_utils
+from modx import constants, exceptions
 from modx.config.middleware.logging import LoggingConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
 from modx.http.middlewares import BaseMiddleware
 from modx.logger import Logger
+from modx.utils import ansi as ansi_utils
 
 
 class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
@@ -91,8 +90,8 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         headers = scope.get('headers', [])
 
         # Extract identifiers
-        if const.ContextKey.REQUEST_ID in self.context:
-            request_id = self.context[const.ContextKey.REQUEST_ID]
+        if constants.ContextKey.REQUEST_ID in self.context:
+            request_id = self.context[constants.ContextKey.REQUEST_ID]
         else:
             request_id = "unknown"
         trace_id = self._extract_header_value(headers, self.trace_id_header)
@@ -260,7 +259,7 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         try:
             with self.logger.catch(
                 "Failed to process request",
-                excl_exc=exc.RuntimeException
+                excl_exc=exceptions.RuntimeException
             ):
                 await self.app(scope, receive, send_wrapper)
         except Exception as e:

@@ -9,7 +9,7 @@ from modx.config import ModXConfig
 from modx.context import Context
 from modx.http import (
     exc_handler,
-    life,
+    lifespan,
     middlewares,
     routers,
 )

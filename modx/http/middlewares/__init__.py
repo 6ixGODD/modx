@@ -65,6 +65,15 @@ def register_middleware(
             config=middleware_config.security
         )
 
+    if middleware_config.trace.enabled:
+        from modx.http.middlewares.trace import TraceMiddleware
+        app.add_middleware(
+            TraceMiddleware,  # type: ignore[arg-type]
+            logger=logger,
+            context=context,
+            config=middleware_config.trace
+        )
+
     if middleware_config.gzip.enabled:
         from fastapi.middleware.gzip import GZipMiddleware
         app.add_middleware(

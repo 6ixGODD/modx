@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dependency_injector import containers, providers
-from openai import http_client
 
 import modx.cache
 import modx.cache.redis
@@ -10,7 +9,7 @@ import modx.client.http
 import modx.config
 import modx.context
 import modx.http
-import modx.http.life
+import modx.http.lifespan
 import modx.interface
 import modx.interface.auth
 import modx.interface.compat
@@ -112,8 +111,8 @@ class Container(containers.DeclarativeContainer):
         infrastructure=infrastructure,
         services=services
     )
-    lifespan: modx.http.life.Lifespan = providers.Singleton(
-        modx.http.life.Lifespan,
+    lifespan: modx.http.lifespan.Lifespan = providers.Singleton(
+        modx.http.lifespan.Lifespan,
         logger=infrastructure.logger,
         config=infrastructure.config,
         http_client=infrastructure.http_client,

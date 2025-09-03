@@ -5,8 +5,7 @@ import re
 
 import starlette.types as types
 
-import modx.constants as const
-import modx.exceptions as exc
+from modx import constants, exceptions
 from modx.config.middleware.auth import AuthConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
@@ -73,7 +72,8 @@ class AuthMiddleware(BaseMiddleware, LoggingTagMixin):
 
         async def send_unauthorized(
             message: str = "Unauthorized",
-            business_code: const.BusinessCode = const.BusinessCode.UNAUTHORIZED,
+            business_code: constants.BusinessCode =
+            constants.BusinessCode.UNAUTHORIZED,
             status_code: int = 401
         ):
             await send(
@@ -89,7 +89,7 @@ class AuthMiddleware(BaseMiddleware, LoggingTagMixin):
                     "body": ErrorResponse(
                         success=False,
                         code=business_code,
-                        data=exc.ExceptionDetails(message=message)
+                        data=exceptions.ExceptionDetails(message=message)
                     ).model_dump_json().encode(),
                 }
             )
@@ -109,14 +109,14 @@ class AuthMiddleware(BaseMiddleware, LoggingTagMixin):
         token = parts[1]
         try:
             await self.auth_interface.authenticate(token)
-        except exc.UnauthorizedError as e:
+        except exceptions.UnauthorizedError as e:
             self.logger.debug(f"Authentication failed: {e.msg}", path=path)
             await send_unauthorized(e.msg)
             return
-        except exc.ForbiddenError as e:
+        except exceptions.ForbiddenError as e:
             self.logger.debug(f"Access forbidden: {e.msg}", path=path)
             await send_unauthorized(
-                e.msg, const.BusinessCode.FORBIDDEN, status_code=403
+                e.msg, constants.BusinessCode.FORBIDDEN, status_code=403
             )
             return
         return await self.app(scope, receive, send)

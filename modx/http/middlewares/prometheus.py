@@ -7,12 +7,12 @@ import typing as t
 import prometheus_client as prom
 import starlette.types as types
 
-import modx.utils.ansi as ansi_utils
 from modx.config.prometheus import PrometheusConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
 from modx.http.middlewares import BaseMiddleware
 from modx.logger import Logger
+from modx.utils import ansi as ansi_utils
 
 
 class PrometheusMiddleware(BaseMiddleware, LoggingTagMixin):

@@ -4,14 +4,13 @@ import typing as t
 
 import starlette.types as types
 
-import modx.constants as const
-import modx.utils as utils
-import modx.utils.ansi as ansi_utils
+from modx import constants, utils
 from modx.config.middleware.security import SecurityConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
 from modx.http.middlewares import BaseMiddleware
 from modx.logger import Logger
+from modx.utils import ansi as ansi_utils
 
 
 class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
@@ -101,12 +100,12 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
 
         # Generate request ID if needed
         if self.add_request_id:
-            del self.context[const.ContextKey.REQUEST_ID]
-            request_id = utils.gen_id(pref=const.IDPrefix.REQUEST)
+            del self.context[constants.ContextKey.REQUEST_ID]
+            request_id = utils.gen_id(pref=constants.IDPrefix.REQUEST)
             security_headers[
-                const.HeaderKey.REQUEST_ID.encode('utf-8')
+                constants.HeaderKey.REQUEST_ID.encode('utf-8')
             ] = request_id.encode("utf-8")
-            self.context[const.ContextKey.REQUEST_ID] = request_id
+            self.context[constants.ContextKey.REQUEST_ID] = request_id
 
         async def send_wrapper(message: types.Message) -> None:
             if message["type"] == "http.response.start":

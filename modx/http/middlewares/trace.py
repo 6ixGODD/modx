@@ -4,14 +4,13 @@ import typing as t
 
 import starlette.types as types
 
-import modx.constants as const
-import modx.utils as utils
-import modx.utils.ansi as ansi_utils
-from modx.config import ModXConfig
+from modx import constants, utils
+from modx.config.middleware.trace import TraceConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
 from modx.http.middlewares import BaseMiddleware
 from modx.logger import Logger
+from modx.utils import ansi as ansi_utils
 
 
 class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
@@ -29,13 +28,13 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         app: types.ASGIApp,
         logger: Logger,
         context: Context,  # [!] should be a singleton object
-        config: ModXConfig,
+        config: TraceConfig,
     ):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
         self.context = context
-        self.config = config.middleware.trace
+        self.config = config
         self.trace_id_header = self.config.trace_id_header
         self.span_id_header = self.config.span_id_header
         self.parent_span_id_header = self.config.parent_span_id_header
@@ -57,9 +56,9 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         """Get current trace headers from context."""
         headers = {}
 
-        trace_id = self.context.get(const.ContextKey.TRACE_ID)
-        span_id = self.context.get(const.ContextKey.SPAN_ID)
-        parent_span_id = self.context.get(const.ContextKey.PARENT_SPAN_ID)
+        trace_id = self.context.get(constants.ContextKey.TRACE_ID)
+        span_id = self.context.get(constants.ContextKey.SPAN_ID)
+        parent_span_id = self.context.get(constants.ContextKey.PARENT_SPAN_ID)
 
         if trace_id:
             headers[self.trace_id_header.encode('utf-8')] = trace_id.encode(
@@ -96,16 +95,16 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
             trace_id = incoming_trace_id
             is_root = False
         else:
-            trace_id = utils.gen_id(pref=const.IDPrefix.TRACE)
+            trace_id = utils.gen_id(pref=constants.IDPrefix.TRACE)
             is_root = True
 
         # Determine parent span ID and new span ID
         if incoming_span_id:
             parent_span_id = incoming_span_id
-            span_id = utils.gen_id(pref=const.IDPrefix.SPAN)
+            span_id = utils.gen_id(pref=constants.IDPrefix.SPAN)
         else:
             parent_span_id = None
-            span_id = utils.gen_id(pref=const.IDPrefix.SPAN)
+            span_id = utils.gen_id(pref=constants.IDPrefix.SPAN)
 
         return {
             "trace_id": trace_id,
@@ -161,15 +160,15 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         trace_info = self._process_tracing_headers(headers)
 
         # Store in context
-        self.context[const.ContextKey.TRACE_ID] = trace_info["trace_id"]
-        self.context[const.ContextKey.SPAN_ID] = trace_info["span_id"]
+        self.context[constants.ContextKey.TRACE_ID] = trace_info["trace_id"]
+        self.context[constants.ContextKey.SPAN_ID] = trace_info["span_id"]
         if trace_info["parent_span_id"]:
-            self.context[const.ContextKey.PARENT_SPAN_ID] = trace_info[
+            self.context[constants.ContextKey.PARENT_SPAN_ID] = trace_info[
                 "parent_span_id"]
         else:
             # Clear parent span ID if not present
-            if const.ContextKey.PARENT_SPAN_ID in self.context:
-                del self.context[const.ContextKey.PARENT_SPAN_ID]
+            if constants.ContextKey.PARENT_SPAN_ID in self.context:
+                del self.context[constants.ContextKey.PARENT_SPAN_ID]
 
         # Log trace information
         self._log_trace_info(trace_info)
@@ -196,9 +195,9 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
             await self.app(scope, receive, send_wrapper)
         finally:
             # Clean up context after request
-            if const.ContextKey.TRACE_ID in self.context:
-                del self.context[const.ContextKey.TRACE_ID]
-            if const.ContextKey.SPAN_ID in self.context:
-                del self.context[const.ContextKey.SPAN_ID]
-            if const.ContextKey.PARENT_SPAN_ID in self.context:
-                del self.context[const.ContextKey.PARENT_SPAN_ID]
+            if constants.ContextKey.TRACE_ID in self.context:
+                del self.context[constants.ContextKey.TRACE_ID]
+            if constants.ContextKey.SPAN_ID in self.context:
+                del self.context[constants.ContextKey.SPAN_ID]
+            if constants.ContextKey.PARENT_SPAN_ID in self.context:
+                del self.context[constants.ContextKey.PARENT_SPAN_ID]
