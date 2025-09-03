@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import traceback
 
-import modx.cli.cmd as cmd
-import modx.cli.exceptions as exc
+from modx.cli import cmd, exceptions
 
 
 def main() -> int:
@@ -11,7 +10,7 @@ def main() -> int:
         _main()
     except KeyboardInterrupt:
         return 130
-    except exc.CLIException as e:
+    except exceptions.CLIException as e:
         traceback.print_exc()
         return e.exit_code
     except Exception:

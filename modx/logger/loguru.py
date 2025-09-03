@@ -4,15 +4,14 @@ import datetime
 import sys
 import typing as t
 
-import modx.exceptions as exc
-import modx.utils as utils
+from modx import exceptions, utils
 from modx.logger import _Logger, LoggerBackend
 from modx.logger.types import LoggingTarget, LogLevel, Rotation
 
 try:
     from loguru import logger as _logger
 except ImportError as e:
-    raise exc.RequiredModuleNotFoundException(
+    raise exceptions.RequiredModuleNotFoundException(
         f'`loguru` package is required for LoguruLogger. '
         f'Please install it with `pip install loguru`.'
     )

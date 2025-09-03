@@ -4,10 +4,10 @@ import abc
 import argparse
 import typing as t
 
-import modx.helpers.slotted as slotted
+from modx.helpers.slotted import SlottedDataClass
 
 
-class BaseArgs(slotted.SlottedDataClass):
+class BaseArgs(SlottedDataClass):
     @classmethod
     def func(cls, args: argparse.Namespace) -> None:
         instance = cls.from_args(args)

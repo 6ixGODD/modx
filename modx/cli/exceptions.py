@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import modx.exceptions as exc
+from modx import exceptions
 
-
-class CLIException(exc.BootstrapException):
+class CLIException(exceptions.BootstrapException):
     exit_code = 1

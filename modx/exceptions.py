@@ -6,7 +6,7 @@ import typing as t
 import pydantic as pydt
 import typing_extensions as te
 
-import modx.constants as const
+from modx import constants
 
 
 class ExceptionDetails(te.TypedDict, total=False):
@@ -90,7 +90,7 @@ class RuntimeException(ModXException):
         self,
         msg: str, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.UNKNOWN_ERROR,
+        code: constants.BusinessCode = constants.BusinessCode.UNKNOWN_ERROR,
         status_code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR,
     ):
         super().__init__(msg)
@@ -116,7 +116,7 @@ class BadRequestError(RuntimeException):
         self,
         msg: str = http.HTTPStatus.BAD_REQUEST.phrase, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.BAD_REQUEST,
+        code: constants.BusinessCode = constants.BusinessCode.BAD_REQUEST,
     ):
         super().__init__(
             msg,
@@ -134,7 +134,7 @@ class InvalidParametersError(BadRequestError):
     ):
         super().__init__(
             msg,
-            code=const.BusinessCode.INVALID_PARAMS,
+            code=constants.BusinessCode.INVALID_PARAMS,
         )
         self.params = params
 
@@ -165,7 +165,7 @@ class UnauthorizedError(RuntimeException):
         self,
         msg: str = http.HTTPStatus.UNAUTHORIZED.phrase, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.UNAUTHORIZED,
+        code: constants.BusinessCode = constants.BusinessCode.UNAUTHORIZED,
     ):
         super().__init__(
             msg,
@@ -179,7 +179,7 @@ class ForbiddenError(RuntimeException):
         self,
         msg: str = http.HTTPStatus.FORBIDDEN.phrase, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.FORBIDDEN,
+        code: constants.BusinessCode = constants.BusinessCode.FORBIDDEN,
     ):
         super().__init__(
             msg,
@@ -193,7 +193,7 @@ class NotFoundError(RuntimeException):
         self,
         msg: str = http.HTTPStatus.NOT_FOUND.phrase, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.NOT_FOUND,
+        code: constants.BusinessCode = constants.BusinessCode.NOT_FOUND,
     ):
         super().__init__(
             msg,
@@ -207,7 +207,8 @@ class ServiceUnavailableError(RuntimeException):
         self,
         msg: str = http.HTTPStatus.SERVICE_UNAVAILABLE.phrase, /,
         *,
-        code: const.BusinessCode = const.BusinessCode.SERVICE_UNAVAILABLE,
+        code: constants.BusinessCode =
+        constants.BusinessCode.SERVICE_UNAVAILABLE,
     ):
         super().__init__(
             msg,

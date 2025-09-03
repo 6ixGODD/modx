@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing as t
 
-import modx.exceptions as exc
+from modx import exceptions
 from modx.interface import BaseInterface
 from modx.logger import Logger
 from modx.service.auth import IAuthService
@@ -25,4 +25,4 @@ class AuthInterface(BaseInterface):
 
     async def authenticate(self, api_key: str) -> None:
         if not await self.auth_service.authenticate(api_key):
-            raise exc.UnauthorizedError("Invalid API key provided.")
+            raise exceptions.UnauthorizedError("Invalid API key provided.")

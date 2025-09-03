@@ -6,7 +6,7 @@ import typing as t
 
 import jinja2 as j2
 
-import modx.constants as const
+from modx import constants
 from modx.config import ModXConfig
 from modx.logger import Logger
 from modx.resources import WatchedResource
@@ -42,7 +42,7 @@ class Models(
                     self.logger.warning(
                         f'Prompt file not found: {prompt_path}'
                     )
-                    prompt = const.DEFAULT_PROMPT
+                    prompt = constants.DEFAULT_PROMPT
                     self.logger.debug(
                         f'Using default prompt for model {definition.id}'
                     )
@@ -116,7 +116,7 @@ class Models(
     def render_safe(
         self,
         id: str,
-        default: str = const.DEFAULT_PROMPT, /,
+        default: str = constants.DEFAULT_PROMPT, /,
         **kwargs: t.Any
     ) -> str:
         try:

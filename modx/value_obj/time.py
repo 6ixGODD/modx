@@ -5,7 +5,7 @@ import typing as t
 
 import pydantic as pydt
 
-import modx.exceptions as exc
+from modx import exceptions
 from modx.value_obj import BaseValueObject
 
 
@@ -19,7 +19,7 @@ class Birthday(BaseValueObject):
             try:
                 return datetime.date.fromisoformat(v)
             except ValueError:
-                raise exc.InvalidParametersError(
+                raise exceptions.InvalidParametersError(
                     f"Invalid date format: {v}. Expected ISO format ("
                     f"YYYY-MM-DDThh:mm:ss)."
                 )
@@ -27,19 +27,19 @@ class Birthday(BaseValueObject):
         if isinstance(v, datetime.date):
             # Ensure earlier than current time
             if v > datetime.datetime.now():
-                raise exc.InvalidParametersError(
+                raise exceptions.InvalidParametersError(
                     f"Date {v} cannot be in the future. "
                     "Please provide a date earlier than the current time."
                 )
             # Ensure not too far in the past
             if v < datetime.date(1900, 1, 1):
-                raise exc.InvalidParametersError(
+                raise exceptions.InvalidParametersError(
                     f"Date {v} is too far in the past. "
                     "Please provide a date after January 1, 1900."
                 )
             return v
         else:
-            raise exc.InvalidParametersError(
+            raise exceptions.InvalidParametersError(
                 "date must be a datetime object or an ISO format string."
             )
 
@@ -71,7 +71,7 @@ class OptionalTimeRange(BaseValueObject):
             and self.end_time
             and self.start_time > self.end_time
         ):
-            raise exc.InvalidParametersError(
+            raise exceptions.InvalidParametersError(
                 "Invalid time range",
                 params={
                     "start_time": "start_time must be less than end_time",
@@ -88,7 +88,7 @@ class TimeRange(BaseValueObject):
     @pydt.model_validator(mode='after')
     def check_time_range(self) -> t.Self:
         if self.start_time > self.end_time:
-            raise exc.InvalidParametersError(
+            raise exceptions.InvalidParametersError(
                 "Invalid time range",
                 params={
                     "start_time": "start_time must be less than end_time",

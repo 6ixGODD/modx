@@ -7,12 +7,8 @@ import uvicorn
 
 from modx.config import ModXConfig
 from modx.context import Context
-from modx.http import (
-    exc_handler,
-    lifespan,
-    middlewares,
-    routers,
-)
+from modx.http import exc_handler, middlewares, routers
+from modx.http.lifespan import Lifespan
 from modx.interface.auth import IAuthInterface
 from modx.logger import Logger
 
@@ -23,7 +19,7 @@ class HTTPServer:
         config: ModXConfig,
         logger: Logger,
         context: Context,
-        lifespan: life.Lifespan,
+        lifespan: Lifespan,
         auth_interface: IAuthInterface
     ):
         self.config = config

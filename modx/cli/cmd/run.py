@@ -6,8 +6,8 @@ import typing as t
 
 from dependency_injector.wiring import inject, Provide
 
-import modx.config as config
 import modx.http.routers.compat
+from modx import config
 from modx.cli.helpers.args import BaseArgs
 from modx.containers import Container
 from modx.http import HTTPServer

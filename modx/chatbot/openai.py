@@ -6,8 +6,7 @@ import typing as t
 import openai
 import openai.types.chat as openai_chat
 
-import modx.constants as const
-import modx.utils as utils
+from modx import constants, exceptions, utils
 from modx.cache import KVCache
 from modx.chatbot import Chatbot
 from modx.chatbot.tools import BaseTool
@@ -23,7 +22,6 @@ from modx.config import ModXConfig
 from modx.helpers.mixin import LoggingTagMixin
 from modx.logger import Logger
 from modx.resources.models import Models
-import modx.exceptions as exc
 
 
 def map_finish_reason(
@@ -76,10 +74,12 @@ class ChatCompletion(Chatbot, LoggingTagMixin):
         cached_message = []
         if key := cache and cache_key:
             cached_message = self.cache.get(key) or []
-        chatcmpl_id = chatcmpl_id or utils.gen_id(pref=const.IDPrefix.CHATCMPL)
+        chatcmpl_id = chatcmpl_id or utils.gen_id(
+            pref=constants.IDPrefix.CHATCMPL
+        )
         created = int(time.time())
         if model not in self.models:
-            raise exc.NotFoundError(f'Model {model} not found')
+            raise exceptions.NotFoundError(f'Model {model} not found')
         model_def = self.models[model]
         sysprompt = self.models.render_safe(model, **kwargs)
         message_list = ([

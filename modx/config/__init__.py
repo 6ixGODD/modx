@@ -6,7 +6,7 @@ import typing as t
 import pydantic as pydt
 import pydantic_settings as ps
 
-import modx.exceptions as exc
+from modx import exceptions
 from modx.config.cache import CacheConfig
 from modx.config.chatbot import ChatbotConfig
 from modx.config.http_client import HttpClientConfig
@@ -47,7 +47,7 @@ class ModXConfig(ps.BaseSettings):
                 data = yaml.safe_load(f)
             return cls.model_validate(data, strict=True)
         except ImportError:
-            raise exc.RequiredModuleNotFoundException(
+            raise exceptions.RequiredModuleNotFoundException(
                 '`yaml` module is required to load configuration from YAML '
                 'files. Please install it using `pip install pyyaml`.'
             )
