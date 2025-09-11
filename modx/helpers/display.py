@@ -175,14 +175,12 @@ class Display:
             msg, style = "Server exited peacefully (this time).", "green"
         else:
             msg = random.choice(
-                [
-                    "异常退出，不出所料。",
-                    "挂了。",
-                    "报错？习惯就好。",
-                    "崩了，但还能更糟。",
-                    "系统罢工，挺正常。",
-                    "寄了，但不意外。",
-                ]
+                ["异常退出，不出所料。",
+                 "挂了。",
+                 "报错？习惯就好。",
+                 "崩了，但还能更糟。",
+                 "系统罢工，挺正常。",
+                 "寄了，但不意外。"]
             )
             style = "grey70"
         self.console.print(

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import typing as t
 
 import fastapi
@@ -30,7 +28,10 @@ async def chat_completions(
     compat: ICompatInterface = fastapi.Depends(
         Provide[Container.interfaces.compat]
     ),
-) -> fastapi.responses.JSONResponse | fastapi.responses.StreamingResponse:
+) -> t.Union[
+    fastapi.responses.JSONResponse,
+    fastapi.responses.StreamingResponse
+]:
     completion = await compat.chat_completions(body)
     if isinstance(completion, t.AsyncIterable):
         return fastapi.responses.StreamingResponse(

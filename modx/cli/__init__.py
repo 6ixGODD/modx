@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import traceback
 
-from modx.cli import cmd, exceptions
+from modx.cli import commands, exceptions
 
 
 def main() -> int:
@@ -20,5 +20,5 @@ def main() -> int:
 
 
 def _main() -> None:
-    args = cmd.parse_args()
+    args = commands.parse_args()
     args.func(args)

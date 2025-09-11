@@ -10,6 +10,7 @@ class CorsConfig(pydt.BaseModel):
     allow_origins: t.List[str] = ["*"]
     allow_credentials: bool = True
     allow_methods: t.List[t.Literal[
+        "*",
         "GET",
         "POST",
         "PUT",
@@ -17,15 +18,7 @@ class CorsConfig(pydt.BaseModel):
         "PATCH",
         "OPTIONS",
         "HEAD"
-    ]] = [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS",
-        "HEAD"
-    ]
+    ]] = ["*"]
     allow_headers: t.List[str] = ["*"]
     allow_origin_regex: str | None = None
     expose_headers: t.List[str] = []

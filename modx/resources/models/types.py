@@ -71,6 +71,15 @@ class Model(te.TypedDict, total=False):
     object: t.Required[t.Literal["model"]]
     """The object type, which is always `model`."""
 
+    name: str
+    """The name of the model."""
+
+    summary: str
+    """A brief description of the model."""
+
+    description: str
+    """A detailed description of the model."""
+
     created: t.Required[int]
     """The Unix timestamp (in seconds) of when the model was created."""
 
