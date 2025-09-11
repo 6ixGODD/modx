@@ -5,18 +5,18 @@ server:
   http_host: 0.0.0.0
   http_port: 8000
   route_prefix: '/v1'
-  openapi_route: '/openapi.json'
+  openapi_route: '/openapi'
   debug: false
   workers: 1
-  ssl_keyfile: ~
-  ssl_certfile: ~
-  ssl_keyfile_password: ~
-  ssl_version: ~
-  ssl_cert_reqs: ~
-  ssl_ca_certs: ~
-  ssl_ciphers: ~
-  headers: ~
-  h11_max_incomplete_event_size: ~
+  # ssl_keyfile:
+  # ssl_certfile:
+  # ssl_keyfile_password:
+  # ssl_version:
+  # ssl_cert_reqs:
+  # ssl_ca_certs:
+  # ssl_ciphers:
+  # headers:
+  # h11_max_incomplete_event_size:
 
 chatbot:
   cache_ttl: 218000
@@ -36,7 +36,7 @@ logging:
           backup_count: 5
         time_based: ~
           # interval: 1  # hours
-        # backup_count: 5
+          # backup_count: 5
 
 middleware:
   auth:
@@ -82,12 +82,12 @@ prometheus:
   enabled: true
   metrics_path: /metrics
   track_in_progress: true
-  buckets: ~
+  # buckets:
   exclude_paths: [ ]
-  custom_labels: ~
+  # custom_labels:
   enable_exemplars: false
-  # app_name: modx
-  # app_version: 1.0.0
+  app_name: modx
+  app_version: 1.0.0
 
 cache:
   split: ':'
