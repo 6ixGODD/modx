@@ -39,9 +39,7 @@ class BusinessCode(enum.StrEnum):
 
     @classmethod
     def from_http_status(cls, status_code: int) -> t.Self:
-        return (http.HTTPStatus(status_code).phrase.upper()
-                .replace(' ', '_')
-                .replace('.', ''))
+        return (http.HTTPStatus(status_code).phrase.upper().replace(' ', '_').replace('.', ''))
 
 
 class IDPrefix(enum.StrEnum):

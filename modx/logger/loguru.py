@@ -4,31 +4,35 @@ import datetime
 import sys
 import typing as t
 
-from modx import exceptions, utils
-from modx.logger import _Logger, LoggerBackend
-from modx.logger.types import LoggingTarget, LogLevel, Rotation
+from modx import exceptions
+from modx import utils
+from modx.logger import _Logger
+from modx.logger import LoggerBackend
+from modx.logger.types import LoggingTarget
+from modx.logger.types import LogLevel
+from modx.logger.types import Rotation
 
 try:
     from loguru import logger as _logger
 except ImportError as e:
     raise exceptions.RequiredModuleNotFoundException(
         f'`loguru` package is required for LoguruLogger. '
-        f'Please install it with `pip install loguru`.'
-    )
+        f'Please install it with `pip install loguru`.')
 
 _LevelMapper: t.Dict[LogLevel, str] = {
     'debug': 'DEBUG',
     'info': 'INFO',
     'warning': 'WARNING',
     'error': 'ERROR',
-    'critical': 'CRITICAL',
+    'critical': 'CRITICAL'
 }
 
 
-def _get_loguru_rotation(cfg: Rotation | None) -> t.Tuple[
-    t.Optional[datetime.timedelta | str],
-    t.Optional[int],
-]:
+def _get_loguru_rotation(
+        cfg: Rotation | None) -> t.Tuple[
+            t.Optional[datetime.timedelta | str],
+            t.Optional[int],
+        ]:
     if cfg is None:
         return None, None
 
@@ -97,12 +101,7 @@ class LoguruBackend(LoggerBackend):
 
         self._is_setup = True
 
-    def log(
-        self,
-        msg: str, /,
-        level: LogLevel,
-        **context: t.Any
-    ) -> None:
+    def log(self, msg: str, /, level: LogLevel, **context: t.Any) -> None:
         self._loguru.bind(**context).lg(
             _LevelMapper.get(level, 'INFO'),
             msg,
@@ -122,10 +121,9 @@ class LoguruBackend(LoggerBackend):
 
 
 class LoguruLogger(_Logger):
-    def __init__(
-        self,
-        targets: t.Sequence[LoggingTarget] | None = None,
-        initial_ctx: t.Dict[str, t.Any] | None = None,
-    ):
+
+    def __init__(self,
+                 targets: t.Sequence[LoggingTarget] | None = None,
+                 initial_ctx: t.Dict[str, t.Any] | None = None):
         backend = LoguruBackend()
         super().__init__(backend, targets, initial_ctx)

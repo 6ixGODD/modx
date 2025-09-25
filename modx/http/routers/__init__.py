@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import fastapi
 
-
 router = fastapi.APIRouter()
 router.add_api_route('/ping', lambda: 'pong', methods={'GET'})
 

@@ -10,18 +10,18 @@ import traceback as tb
 import types
 import typing as t
 
-import modx.exceptions as exc_
 from modx.config import ModXConfig
-from modx.logger.types import LoggingTarget, LogLevel
+import modx.exceptions as exc_
+from modx.logger.types import LoggingTarget
+from modx.logger.types import LogLevel
 
-_decorator_context: cvs.ContextVar[t.Dict[str, t.Any]] = cvs.ContextVar(
-    '_decorator_context',
-    default={}
-)
+_decorator_context: cvs.ContextVar[t.Dict[str, t.Any]] = cvs.ContextVar('_decorator_context',
+                                                                        default={})
 F = t.TypeVar('F', bound=t.Callable[..., t.Any])
 
 
 class LogCtx:
+
     @staticmethod
     def add(**ctx: t.Any) -> None:
         current_ctx = _decorator_context.get({})
@@ -44,12 +44,7 @@ class LoggerBackend(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def log(
-        self,
-        msg: str, /,
-        level: LogLevel,
-        **ctx: t.Any
-    ) -> None:
+    def log(self, msg: str, /, level: LogLevel, **ctx: t.Any) -> None:
         pass
 
     @abc.abstractmethod
@@ -63,11 +58,7 @@ class LoggerBackend(abc.ABC):
 
 class _LoggerContext:
 
-    def __init__(
-        self,
-        backend: LoggerBackend,
-        initial_ctx: t.Dict[str, t.Any] | None = None
-    ):
+    def __init__(self, backend: LoggerBackend, initial_ctx: t.Dict[str, t.Any] | None = None):
         self._backend = backend
         self._context = initial_ctx or {}
 
@@ -107,23 +98,20 @@ class _LoggerContext:
     @cl.contextmanager
     def catch(
         self,
-        msg: str, /,
-        exc:
-        type[BaseException] | t.Tuple[type[BaseException], ...] = Exception,
-        excl_exc:
-        type[BaseException] | t.Tuple[type[BaseException], ...] = ()
+        msg: str,
+        /,
+        exc: type[BaseException] | t.Tuple[type[BaseException], ...] = Exception,
+        excl_exc: type[BaseException] | t.Tuple[type[BaseException], ...] = ()
     ) -> t.Generator[None, None, None]:
         try:
             yield
         except exc as e:
             if isinstance(e, excl_exc):
                 raise
-            self.error(
-                f"{msg}: {e}",
-                exception_type=type(e).__name__,
-                exception=e,
-                traceback=tb.format_exc()
-            )
+            self.error(f"{msg}: {e}",
+                       exception_type=type(e).__name__,
+                       exception=e,
+                       traceback=tb.format_exc())
             raise
 
     def log_method(
@@ -131,10 +119,8 @@ class _LoggerContext:
         msg: str | None = None,
         level: LogLevel = 'info',
         *,
-        exc:
-        type[BaseException] | t.Tuple[type[BaseException], ...] = Exception,
-        excl_exc:
-        type[BaseException] | t.Tuple[type[BaseException], ...] = (),
+        exc: type[BaseException] | t.Tuple[type[BaseException], ...] = Exception,
+        excl_exc: type[BaseException] | t.Tuple[type[BaseException], ...] = (),
         logargs: bool = False,
         logres: bool = False,
         logdur: bool = True,
@@ -146,6 +132,7 @@ class _LoggerContext:
     ) -> t.Callable[[F], F]:
 
         def decorator(fn: F) -> F:
+
             @ft.wraps(fn)
             def wrapper(*args, **kwargs):
                 func_name = fn.__name__
@@ -175,20 +162,14 @@ class _LoggerContext:
                     bound_args.apply_defaults()
 
                     filtered_args = {
-                        k: v for k, v in bound_args.arguments.items()
-                        if k not in ('self', 'cls')
+                        k: v for k, v in bound_args.arguments.items() if k not in ('self', 'cls')
                     }
                     base_ctx['arguments'] = filtered_args
 
                 start_time = time.time()
                 if pre_exec:
                     pre_msg = msg or f"Executing {full_name}"
-                    self.log(
-                        pre_msg,
-                        level=level,
-                        **base_ctx,
-                        execution_stage='pre'
-                    )
+                    self.log(pre_msg, level=level, **base_ctx, execution_stage='pre')
 
                 try:
                     result = fn(*args, **kwargs)
@@ -202,18 +183,13 @@ class _LoggerContext:
                         success_context = {**base_ctx, **decorator_ctx}
 
                         if logdur:
-                            success_context['duration_ms'] = round(
-                                duration * 1000, 2
-                            )
+                            success_context['duration_ms'] = round(duration * 1000, 2)
 
                         if logres:
                             try:
                                 if hasattr(result, '__dict__'):
                                     success_context['result'] = str(result)
-                                elif isinstance(
-                                    result,
-                                    (str, int, float, bool, list, dict)
-                                ):
+                                elif isinstance(result, (str, int, float, bool, list, dict)):
                                     success_context['result'] = result
                                 else:
                                     success_context['result'] = str(result)
@@ -221,13 +197,11 @@ class _LoggerContext:
                                 success_context['result'] = '<unserializable>'
 
                         success_msg = msg or f"Completed {full_name}"
-                        self.log(
-                            success_msg,
-                            level=success_level,
-                            **success_context,
-                            execution_stage='post',
-                            status='success'
-                        )
+                        self.log(success_msg,
+                                 level=success_level,
+                                 **success_context,
+                                 execution_stage='post',
+                                 status='success')
 
                     return result
 
@@ -242,8 +216,7 @@ class _LoggerContext:
 
                     error_context = {
                         **base_ctx,
-                        **decorator_ctx,
-                        'exception_type': type(e).__name__,
+                        **decorator_ctx, 'exception_type': type(e).__name__,
                         'exception': str(e),
                         'traceback': tb.format_exc(),
                         'execution_stage': 'error',
@@ -251,16 +224,10 @@ class _LoggerContext:
                     }
 
                     if logdur:
-                        error_context['duration_ms'] = (
-                            round(duration * 1000, 2)
-                        )
+                        error_context['duration_ms'] = (round(duration * 1000, 2))
 
                     error_msg = msg or f"Failed {full_name}: {e}"
-                    self.log(
-                        error_msg,
-                        level=error_level,
-                        **error_context
-                    )
+                    self.log(error_msg, level=error_level, **error_context)
 
                     raise
                 finally:
@@ -272,12 +239,11 @@ class _LoggerContext:
 
 
 class _Logger(_LoggerContext):
-    def __init__(
-        self,
-        backend: LoggerBackend,
-        targets: t.Sequence[LoggingTarget] | None = None,
-        initial_ctx: t.Dict[str, t.Any] | None = None
-    ):
+
+    def __init__(self,
+                 backend: LoggerBackend,
+                 targets: t.Sequence[LoggingTarget] | None = None,
+                 initial_ctx: t.Dict[str, t.Any] | None = None):
         super().__init__(backend, initial_ctx)
         self._targets = list(targets or [])
         self._backend.setup_handlers(self._targets)
@@ -295,17 +261,14 @@ class _Logger(_LoggerContext):
     def __enter__(self) -> t.Self:
         return self
 
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: types.TracebackType | None, /
-    ) -> t.Literal[False]:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None,
+                 traceback: types.TracebackType | None, /) -> t.Literal[False]:
         self.close()
         return False
 
 
 class Logger(_Logger):
+
     def __init__(self, config: ModXConfig):
         self.config = config.logging
 
@@ -317,11 +280,8 @@ class Logger(_Logger):
             backend = loguru.LoguruBackend()
         else:
             raise exc_.InvalidConfigurationException(
-                f"Unsupported logging backend: {self.config.backend}"
-            )
+                f"Unsupported logging backend: {self.config.backend}")
 
-        super().__init__(
-            backend=backend,
-            targets=self.config.targets,
-            initial_ctx=self.config.extra_context
-        )
+        super().__init__(backend=backend,
+                         targets=self.config.targets,
+                         initial_ctx=self.config.extra_context)

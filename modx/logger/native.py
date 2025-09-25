@@ -7,10 +7,12 @@ import pathlib as p
 import sys
 import typing as t
 
+from modx.logger import _Logger
+from modx.logger import LoggerBackend
+from modx.logger.types import LoggingTarget
+from modx.logger.types import LogLevel
 import modx.utils as utils
 import modx.utils.ansi as ansi_utils
-from modx.logger import _Logger, LoggerBackend
-from modx.logger.types import LoggingTarget, LogLevel
 
 _LEVEL_MAP: t.Dict[LogLevel, int] = {
     'debug': logging.DEBUG,
@@ -25,23 +27,20 @@ class ContextFormatter(logging.Formatter):
     """Enhanced formatter with ANSI colors and improved layout."""
 
     LEVEL_COLORS = {
-        logging.DEBUG: (ansi_utils.ANSIFormatter.FG.GRAY,
-                        ansi_utils.ANSIFormatter.STYLE.DIM),
+        logging.DEBUG: (ansi_utils.ANSIFormatter.FG.GRAY, ansi_utils.ANSIFormatter.STYLE.DIM),
         logging.INFO: (ansi_utils.ANSIFormatter.FG.BRIGHT_CYAN,),
-        logging.WARNING: (ansi_utils.ANSIFormatter.FG.BRIGHT_YELLOW,
-                          ansi_utils.ANSIFormatter.STYLE.BOLD),
-        logging.ERROR: (ansi_utils.ANSIFormatter.FG.BRIGHT_RED,
-                        ansi_utils.ANSIFormatter.STYLE.BOLD),
+        logging.WARNING:
+            (ansi_utils.ANSIFormatter.FG.BRIGHT_YELLOW, ansi_utils.ANSIFormatter.STYLE.BOLD),
+        logging.ERROR:
+            (ansi_utils.ANSIFormatter.FG.BRIGHT_RED, ansi_utils.ANSIFormatter.STYLE.BOLD),
         logging.CRITICAL: (ansi_utils.ANSIFormatter.FG.BRIGHT_RED,
-                           ansi_utils.ANSIFormatter.BG.WHITE,
-                           ansi_utils.ANSIFormatter.STYLE.BOLD),
+                           ansi_utils.ANSIFormatter.BG.WHITE, ansi_utils.ANSIFormatter.STYLE.BOLD),
     }
 
     COMPONENT_STYLES = {
         'timestamp': (ansi_utils.ANSIFormatter.FG.GRAY,),
         'logger': (ansi_utils.ANSIFormatter.FG.MAGENTA,),
-        'tag': (ansi_utils.ANSIFormatter.FG.CYAN,
-                ansi_utils.ANSIFormatter.STYLE.BOLD),
+        'tag': (ansi_utils.ANSIFormatter.FG.CYAN, ansi_utils.ANSIFormatter.STYLE.BOLD),
         'arrow': (ansi_utils.ANSIFormatter.FG.GRAY,),
         'context': (ansi_utils.ANSIFormatter.FG.GRAY,),
         # Same as arrow for consistency
@@ -50,8 +49,7 @@ class ContextFormatter(logging.Formatter):
     def __init__(self, is_console: bool = False, use_colors: bool = True):
         super().__init__(datefmt='%Y-%m-%d %H:%M:%S')
         self.is_console = is_console
-        self.use_colors = (use_colors and
-                           ansi_utils.ANSIFormatter.supports_color())
+        self.use_colors = (use_colors and ansi_utils.ANSIFormatter.supports_color())
         if self.use_colors:
             ansi_utils.ANSIFormatter.enable(True)
 
@@ -59,10 +57,9 @@ class ContextFormatter(logging.Formatter):
     def _extract_context(record: logging.LogRecord) -> t.Dict[str, t.Any]:
         """Extract context from log record, excluding standard fields."""
         excluded = {
-            'name', 'msg', 'args', 'levelname', 'levelno', 'pathname',
-            'filename', 'module', 'lineno', 'funcName', 'created', 'msecs',
-            'relativeCreated', 'thread', 'threadName', 'processName', 'process',
-            'getMessage', 'exc_info', 'exc_text', 'stack_info', 'message'
+            'name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 'filename', 'module',
+            'lineno', 'funcName', 'created', 'msecs', 'relativeCreated', 'thread', 'threadName',
+            'processName', 'process', 'getMessage', 'exc_info', 'exc_text', 'stack_info', 'message'
         }
 
         context = {}
@@ -75,11 +72,7 @@ class ContextFormatter(logging.Formatter):
                     context[key] = str(value)
         return context
 
-    def _format_logger_with_tag(
-        self,
-        name: str,
-        context: t.Dict[str, t.Any]
-    ) -> str:
+    def _format_logger_with_tag(self, name: str, context: t.Dict[str, t.Any]) -> str:
         """Format logger name with optional TAG."""
         tag = context.get('TAG')
 
@@ -122,18 +115,11 @@ class ContextFormatter(logging.Formatter):
             full_display = f"{truncated_name}.{truncated_tag}"
 
             if self.use_colors:
-                colored_name = ansi_utils.ANSIFormatter.format(
-                    truncated_name,
-                    *self.COMPONENT_STYLES['logger']
-                )
-                colored_tag = ansi_utils.ANSIFormatter.format(
-                    truncated_tag,
-                    *self.COMPONENT_STYLES['tag']
-                )
-                colored_dot = ansi_utils.ANSIFormatter.format(
-                    ".",
-                    ansi_utils.ANSIFormatter.FG.GRAY
-                )
+                colored_name = ansi_utils.ANSIFormatter.format(truncated_name,
+                                                               *self.COMPONENT_STYLES['logger'])
+                colored_tag = ansi_utils.ANSIFormatter.format(truncated_tag,
+                                                              *self.COMPONENT_STYLES['tag'])
+                colored_dot = ansi_utils.ANSIFormatter.format(".", ansi_utils.ANSIFormatter.FG.GRAY)
                 display = f"{colored_name}{colored_dot}{colored_tag}"
             else:
                 display = full_display
@@ -154,18 +140,11 @@ class ContextFormatter(logging.Formatter):
             display = f"{truncated_name:<40}"  # Left-align and pad to 40
 
             if self.use_colors:
-                display = ansi_utils.ANSIFormatter.format(
-                    display,
-                    *self.COMPONENT_STYLES['logger']
-                )
+                display = ansi_utils.ANSIFormatter.format(display, *self.COMPONENT_STYLES['logger'])
 
         return display
 
-    def _format_context(
-        self,
-        context: t.Dict[str, t.Any],
-        prefix_len: int
-    ) -> str:
+    def _format_context(self, context: t.Dict[str, t.Any], prefix_len: int) -> str:
         """Format context for console output."""
         # Remove TAG since it's in logger name
         ctx = {k: v for k, v in context.items() if k != 'TAG'}
@@ -175,29 +154,19 @@ class ContextFormatter(logging.Formatter):
         indent = " " * (prefix_len - 3)  # for "==> "
         arrow = "==>"
         if self.use_colors:
-            arrow = ansi_utils.ANSIFormatter.format(
-                arrow,
-                *self.COMPONENT_STYLES['context']
-            )
+            arrow = ansi_utils.ANSIFormatter.format(arrow, *self.COMPONENT_STYLES['context'])
 
         lines = []
         for k, v in ctx.items():
             line = f"{k}={v}"
             if self.use_colors:
-                line = ansi_utils.ANSIFormatter.format(
-                    line,
-                    *self.COMPONENT_STYLES['context']
-                )
+                line = ansi_utils.ANSIFormatter.format(line, *self.COMPONENT_STYLES['context'])
             lines.append(f"\n{indent}{arrow} {line}")
 
         return "".join(lines)
 
     @staticmethod
-    def _get_prefix_length(
-        timestamp: str,
-        logger: str,
-        loglevel: str
-    ) -> int:
+    def _get_prefix_length(timestamp: str, logger: str, loglevel: str) -> int:
         """Calculate prefix length for alignment."""
         return len(f"[{timestamp}] [{logger}] [{loglevel}] => ")
 
@@ -209,11 +178,7 @@ class ContextFormatter(logging.Formatter):
         else:
             return self._format_json(record, context)
 
-    def _format_console(
-        self,
-        record: logging.LogRecord,
-        context: t.Dict[str, t.Any]
-    ) -> str:
+    def _format_console(self, record: logging.LogRecord, context: t.Dict[str, t.Any]) -> str:
         """Format for console output with colors and alignment."""
         timestamp = self.formatTime(record, self.datefmt)
         logger_name = self._format_logger_with_tag(record.name, context)
@@ -222,18 +187,11 @@ class ContextFormatter(logging.Formatter):
 
         # Apply colors
         if self.use_colors:
-            timestamp = ansi_utils.ANSIFormatter.format(
-                timestamp,
-                *self.COMPONENT_STYLES['timestamp']
-            )
-            level_name = ansi_utils.ANSIFormatter.format(
-                level_name,
-                *self.LEVEL_COLORS.get(record.levelno, ())
-            )
-            arrow = ansi_utils.ANSIFormatter.format(
-                "=>",
-                *self.COMPONENT_STYLES['arrow']
-            )
+            timestamp = ansi_utils.ANSIFormatter.format(timestamp,
+                                                        *self.COMPONENT_STYLES['timestamp'])
+            level_name = ansi_utils.ANSIFormatter.format(level_name,
+                                                         *self.LEVEL_COLORS.get(record.levelno, ()))
+            arrow = ansi_utils.ANSIFormatter.format("=>", *self.COMPONENT_STYLES['arrow'])
         else:
             arrow = "=>"
 
@@ -243,8 +201,7 @@ class ContextFormatter(logging.Formatter):
         prefix_len = self._get_prefix_length(
             plain_timestamp,
             "somnmind" + 32 * " ",  # Max 40-char logger
-            plain_level
-        )  # Use consistent 40-char logger
+            plain_level)  # Use consistent 40-char logger
         indent = " " * (prefix_len - 3)
 
         # Handle multiline messages
@@ -272,25 +229,17 @@ class ContextFormatter(logging.Formatter):
             if not log_line.endswith('\n'):
                 log_line += '\n'
 
-            exc_lines = [line for line in record.exc_text.split('\n') if
-                         line.strip()]
+            exc_lines = [line for line in record.exc_text.split('\n') if line.strip()]
             for line in exc_lines:
                 colored_line = line
                 if self.use_colors:
                     colored_line = ansi_utils.ANSIFormatter.format(
-                        line,
-                        ansi_utils.ANSIFormatter.FG.RED,
-                        ansi_utils.ANSIFormatter.STYLE.DIM
-                    )
+                        line, ansi_utils.ANSIFormatter.FG.RED, ansi_utils.ANSIFormatter.STYLE.DIM)
                 log_line += f"{indent}{arrow} {colored_line}\n"
 
         return log_line.rstrip('\n')
 
-    def _format_json(
-        self,
-        record: logging.LogRecord,
-        context: t.Dict[str, t.Any]
-    ) -> str:
+    def _format_json(self, record: logging.LogRecord, context: t.Dict[str, t.Any]) -> str:
         """Format for file output as JSON."""
         data = {
             'timestamp': self.formatTime(record, self.datefmt),
@@ -329,26 +278,18 @@ def _create_handler(target: LoggingTarget) -> logging.Handler:
                     filename=str(file_path),
                     maxBytes=max_bytes,
                     backupCount=target.rotation.size_based.backup_count,
-                    encoding='utf-8'
-                )
+                    encoding='utf-8')
             elif target.rotation.time_based:
                 handler = logging.handlers.TimedRotatingFileHandler(
                     filename=str(file_path),
                     when='H',
                     interval=target.rotation.time_based.interval,
                     backupCount=target.rotation.time_based.backup_count,
-                    encoding='utf-8'
-                )
+                    encoding='utf-8')
             else:
-                handler = logging.FileHandler(
-                    filename=str(file_path),
-                    encoding='utf-8'
-                )
+                handler = logging.FileHandler(filename=str(file_path), encoding='utf-8')
         else:
-            handler = logging.FileHandler(
-                filename=str(file_path),
-                encoding='utf-8'
-            )
+            handler = logging.FileHandler(filename=str(file_path), encoding='utf-8')
 
         formatter = ContextFormatter(is_console=False, use_colors=False)
 
@@ -366,9 +307,7 @@ class NativeLoggingBackend(LoggerBackend):
         self._logger.setLevel(logging.DEBUG)
         self._handlers: t.List[logging.Handler] = []
         self._is_setup = False
-        ansi_utils.ANSIFormatter.enable(
-            ansi_utils.ANSIFormatter.supports_color()
-        )
+        ansi_utils.ANSIFormatter.enable(ansi_utils.ANSIFormatter.supports_color())
 
     def setup_handlers(self, targets: t.List[LoggingTarget]) -> None:
         if self._is_setup:
@@ -388,23 +327,15 @@ class NativeLoggingBackend(LoggerBackend):
         self._logger.propagate = False
         self._is_setup = True
 
-    def log(
-        self,
-        msg: str,
-        /,
-        level: LogLevel,
-        **context: t.Any
-    ) -> None:
+    def log(self, msg: str, /, level: LogLevel, **context: t.Any) -> None:
         log_level = _LEVEL_MAP.get(level, logging.INFO)
-        record = self._logger.makeRecord(
-            name=self._logger.name,
-            level=log_level,
-            fn='',
-            lno=0,
-            msg=msg,
-            args=(),
-            exc_info=None
-        )
+        record = self._logger.makeRecord(name=self._logger.name,
+                                         level=log_level,
+                                         fn='',
+                                         lno=0,
+                                         msg=msg,
+                                         args=(),
+                                         exc_info=None)
 
         # Add context to record
         for key, value in context.items():

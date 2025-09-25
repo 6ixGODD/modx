@@ -6,9 +6,7 @@ import typing as t
 
 
 class Context(coll.MutableMapping):
-    _context: cvs.ContextVar[dict[str, t.Any]] = (
-        cvs.ContextVar('_context', default=None)
-    )
+    _context: cvs.ContextVar[dict[str, t.Any]] = (cvs.ContextVar('_context', default=None))
 
     def __init__(self, init_data: dict[str, t.Any] | None = None):
         self._context.set((init_data or {}).copy())
@@ -84,11 +82,7 @@ class Context(coll.MutableMapping):
         self._context.set(context)
         return value
 
-    def update(
-        self,
-        other: dict[str, t.Any] | Context,
-        **kwargs
-    ) -> t.Self:
+    def update(self, other: dict[str, t.Any] | Context, **kwargs) -> t.Self:
         """Update context with another dict or Context"""
         context = self._context.get().copy()
         if isinstance(other, Context):

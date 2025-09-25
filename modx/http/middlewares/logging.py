@@ -7,7 +7,8 @@ import typing as t
 
 import starlette.types as types
 
-from modx import constants, exceptions
+from modx import constants
+from modx import exceptions
 from modx.config.middleware.logging import LoggingConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
@@ -45,13 +46,7 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         'HEAD': ansi_utils.ANSIFormatter.FG.BRIGHT_GREEN,
     }
 
-    def __init__(
-        self,
-        app: types.ASGIApp,
-        logger: Logger,
-        context: Context,
-        config: LoggingConfig,
-    ):
+    def __init__(self, app: types.ASGIApp, logger: Logger, context: Context, config: LoggingConfig):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
@@ -60,28 +55,20 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
         self.context = context
         self.trace_id_header = self.config.trace_id_header.lower().encode()
         self.span_id_header = self.config.span_id_header.lower().encode()
-        self.parent_span_id_header = (self.config.
-                                      parent_span_id_header.lower().encode())
+        self.parent_span_id_header = (self.config.parent_span_id_header.lower().encode())
         self.exclude_paths = self.config.exclude_paths or set()
 
         ansi_utils.ANSIFormatter.enable(self.config.colorize)
 
     @staticmethod
-    def _extract_header_value(
-        headers: t.List[t.Tuple[bytes, bytes]],
-        header_name: bytes
-    ) -> str | None:
+    def _extract_header_value(headers: t.List[t.Tuple[bytes, bytes]],
+                              header_name: bytes) -> str | None:
         for name, value in headers:
             if name.lower() == header_name:
                 return value.decode('utf-8', 'replace')
         return None
 
-    async def __call__(
-        self,
-        scope: types.Scope,
-        receive: types.Receive,
-        send: types.Send
-    ) -> None:
+    async def __call__(self, scope: types.Scope, receive: types.Receive, send: types.Send) -> None:
         if scope["type"] != "http" or scope['path'] in self.exclude_paths:
             await self.app(scope, receive, send)
             return
@@ -96,17 +83,12 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
             request_id = "unknown"
         trace_id = self._extract_header_value(headers, self.trace_id_header)
         span_id = self._extract_header_value(headers, self.span_id_header)
-        parent_span_id = self._extract_header_value(
-            headers,
-            self.parent_span_id_header
-        )
+        parent_span_id = self._extract_header_value(headers, self.parent_span_id_header)
 
         # Format request info inline
         method = scope['method']
         path = scope['path']
-        client = f"{scope['client'][0]}:{scope['client'][1]}" if scope.get(
-            'client'
-        ) else "Unknown"
+        client = f"{scope['client'][0]}:{scope['client'][1]}" if scope.get('client') else "Unknown"
 
         # Color mappings
         method_colors = {
@@ -121,19 +103,11 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
 
         # Format components
         method_colored = ansi_utils.ANSIFormatter.format(
-            method,
-            method_colors.get(method, ansi_utils.ANSIFormatter.FG.WHITE),
-            ansi_utils.ANSIFormatter.STYLE.BOLD
-        )
-        path_colored = ansi_utils.ANSIFormatter.format(
-            path,
-            ansi_utils.ANSIFormatter.FG.WHITE,
-            ansi_utils.ANSIFormatter.STYLE.BOLD
-        )
-        client_colored = ansi_utils.ANSIFormatter.format(
-            client,
-            ansi_utils.ANSIFormatter.FG.GRAY
-        )
+            method, method_colors.get(method, ansi_utils.ANSIFormatter.FG.WHITE),
+            ansi_utils.ANSIFormatter.STYLE.BOLD)
+        path_colored = ansi_utils.ANSIFormatter.format(path, ansi_utils.ANSIFormatter.FG.WHITE,
+                                                       ansi_utils.ANSIFormatter.STYLE.BOLD)
+        client_colored = ansi_utils.ANSIFormatter.format(client, ansi_utils.ANSIFormatter.FG.GRAY)
 
         # Trace info
         trace_parts = []
@@ -145,8 +119,7 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
             trace_parts.append(f"parent:{parent_span_id}")
         trace_info = ansi_utils.ANSIFormatter.format(
             f" [{' | '.join(trace_parts)}]",
-            ansi_utils.ANSIFormatter.FG.CYAN
-        ) if trace_parts else ""
+            ansi_utils.ANSIFormatter.FG.CYAN) if trace_parts else ""
 
         # Log request
         request_log = (f"[{request_id}] → {method_colored} "
@@ -161,10 +134,7 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
             "trace_id": trace_id,
             "span_id": span_id,
             "parent_span_id": parent_span_id,
-            "user_agent": self._extract_header_value(
-                headers,
-                b'user-agent'
-            )
+            "user_agent": self._extract_header_value(headers, b'user-agent')
         }
         if trace_id:
             log_ctx["trace_id"] = trace_id
@@ -174,14 +144,11 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
             log_ctx["parent_span_id"] = parent_span_id
 
         if self.config.log_query_string and scope.get('query_string'):
-            log_ctx["query_string"] = scope['query_string'].decode(
-                'utf-8',
-                'replace'
-            )
+            log_ctx["query_string"] = scope['query_string'].decode('utf-8', 'replace')
         if self.config.log_headers:
             log_ctx["headers"] = {
-                k.decode('utf-8', 'replace'): v.decode('utf-8', 'replace')
-                for k, v in headers}
+                k.decode('utf-8', 'replace'): v.decode('utf-8', 'replace') for k, v in headers
+            }
 
         self.logger.with_context(**log_ctx).info(request_log)
 
@@ -208,33 +175,21 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
                     status_text = str(status_code)
 
                 status_colored = ansi_utils.ANSIFormatter.format(
-                    status_text,
-                    status_colors.get(
-                        status_family,
-                        ansi_utils.ANSIFormatter.FG.WHITE
-                    ),
-                    ansi_utils.ANSIFormatter.STYLE.BOLD if status_family >= 4
-                    else
-                    None
-                )
+                    status_text, status_colors.get(status_family,
+                                                   ansi_utils.ANSIFormatter.FG.WHITE),
+                    ansi_utils.ANSIFormatter.STYLE.BOLD if status_family >= 4 else None)
 
                 # Duration color
                 if duration_ms < 100:
                     duration_colored = ansi_utils.ANSIFormatter.format(
-                        f"{duration_ms}ms",
-                        ansi_utils.ANSIFormatter.FG.GREEN
-                    )
+                        f"{duration_ms}ms", ansi_utils.ANSIFormatter.FG.GREEN)
                 elif duration_ms < 500:
                     duration_colored = ansi_utils.ANSIFormatter.format(
-                        f"{duration_ms}ms",
-                        ansi_utils.ANSIFormatter.FG.YELLOW
-                    )
+                        f"{duration_ms}ms", ansi_utils.ANSIFormatter.FG.YELLOW)
                 else:
                     duration_colored = ansi_utils.ANSIFormatter.format(
-                        f"{duration_ms}ms",
-                        ansi_utils.ANSIFormatter.FG.RED,
-                        ansi_utils.ANSIFormatter.STYLE.BOLD
-                    )
+                        f"{duration_ms}ms", ansi_utils.ANSIFormatter.FG.RED,
+                        ansi_utils.ANSIFormatter.STYLE.BOLD)
 
                 response_log = (f"[{request_id}] ← {status_colored} in "
                                 f"{duration_colored}{trace_info}")
@@ -257,10 +212,8 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
 
         # Execute with error handling
         try:
-            with self.logger.catch(
-                "Failed to process request",
-                excl_exc=exceptions.RuntimeException
-            ):
+            with self.logger.catch("Failed to process request",
+                                   excl_exc=exceptions.RuntimeException):
                 await self.app(scope, receive, send_wrapper)
         except Exception as e:
             error_duration = round((time.time() - start_time) * 1000, 2)
@@ -280,10 +233,6 @@ class LoggingMiddleware(BaseMiddleware, LoggingTagMixin):
                 error_ctx["span_id"] = span_id
 
             self.logger.with_context(**error_ctx).error(
-                ansi_utils.ANSIFormatter.format(
-                    error_msg,
-                    ansi_utils.ANSIFormatter.FG.RED,
-                    ansi_utils.ANSIFormatter.STYLE.BOLD
-                )
-            )
+                ansi_utils.ANSIFormatter.format(error_msg, ansi_utils.ANSIFormatter.FG.RED,
+                                                ansi_utils.ANSIFormatter.STYLE.BOLD))
             raise

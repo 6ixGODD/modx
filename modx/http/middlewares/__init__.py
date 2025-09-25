@@ -11,33 +11,23 @@ from modx.logger import Logger
 
 
 class BaseMiddleware:
+
     def __init__(self, app: types.ASGIApp) -> None:
         self.app = app
 
-    async def __call__(
-        self,
-        scope: types.Scope,
-        receive: types.Receive,
-        send: types.Send
-    ) -> None:
+    async def __call__(self, scope: types.Scope, receive: types.Receive, send: types.Send) -> None:
         await self.app(scope, receive, send)
 
 
-def register_middleware(
-    app: fastapi.FastAPI,
-    middleware_config: MiddlewareConfig,
-    prom_config: PrometheusConfig,
-    context: Context,
-    logger: Logger,
-    auth_interface: IAuthInterface
-) -> None:
+def register_middleware(app: fastapi.FastAPI, middleware_config: MiddlewareConfig,
+                        prom_config: PrometheusConfig, context: Context, logger: Logger,
+                        auth_interface: IAuthInterface) -> None:
     from modx.http.middlewares.prometheus import PrometheusMiddleware
     app.add_middleware(
         PrometheusMiddleware,  # type: ignore[arg-type]
         logger=logger,
         context=context,
-        config=prom_config
-    )
+        config=prom_config)
 
     from modx.http.middlewares.logging import LoggingMiddleware
     app.add_middleware(
@@ -62,8 +52,7 @@ def register_middleware(
             SecurityMiddleware,  # type: ignore[arg-type]
             logger=logger,
             context=context,
-            config=middleware_config.security
-        )
+            config=middleware_config.security)
 
     if middleware_config.trace.enabled:
         from modx.http.middlewares.trace import TraceMiddleware
@@ -71,16 +60,14 @@ def register_middleware(
             TraceMiddleware,  # type: ignore[arg-type]
             logger=logger,
             context=context,
-            config=middleware_config.trace
-        )
+            config=middleware_config.trace)
 
     if middleware_config.gzip.enabled:
         from fastapi.middleware.gzip import GZipMiddleware
         app.add_middleware(
             GZipMiddleware,  # type: ignore[arg-type]
             minimum_size=middleware_config.gzip.minimum_size,
-            compresslevel=middleware_config.gzip.compresslevel
-        )
+            compresslevel=middleware_config.gzip.compresslevel)
 
     if middleware_config.cors.enabled:
         from fastapi.middleware.cors import CORSMiddleware
@@ -92,5 +79,4 @@ def register_middleware(
             allow_headers=middleware_config.cors.allow_headers,
             allow_origin_regex=middleware_config.cors.allow_origin_regex,
             expose_headers=middleware_config.cors.expose_headers,
-            max_age=middleware_config.cors.max_age
-        )
+            max_age=middleware_config.cors.max_age)

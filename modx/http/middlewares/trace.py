@@ -4,7 +4,8 @@ import typing as t
 
 import starlette.types as types
 
-from modx import constants, utils
+from modx import constants
+from modx import utils
 from modx.config.middleware.trace import TraceConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
@@ -23,13 +24,7 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
     """
     __logging_tag__ = 'modx.http.middlewares.trace'
 
-    def __init__(
-        self,
-        app: types.ASGIApp,
-        logger: Logger,
-        context: Context,  # [!] should be a singleton object
-        config: TraceConfig,
-    ):
+    def __init__(self, app: types.ASGIApp, logger: Logger, context: Context, config: TraceConfig):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
@@ -41,10 +36,8 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         self.log_trace_info = self.config.log_trace_info
 
     @staticmethod
-    def _extract_header_value(
-        headers: t.List[t.Tuple[bytes, bytes]],
-        header_name: str
-    ) -> t.Optional[str]:
+    def _extract_header_value(headers: t.List[t.Tuple[bytes, bytes]],
+                              header_name: str) -> t.Optional[str]:
         """Extract header value by name (case-insensitive)."""
         header_name_bytes = header_name.lower().encode()
         for name, value in headers:
@@ -61,34 +54,20 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         parent_span_id = self.context.get(constants.ContextKey.PARENT_SPAN_ID)
 
         if trace_id:
-            headers[self.trace_id_header.encode('utf-8')] = trace_id.encode(
-                'utf-8'
-            )
+            headers[self.trace_id_header.encode('utf-8')] = trace_id.encode('utf-8')
         if span_id:
-            headers[self.span_id_header.encode('utf-8')] = span_id.encode(
-                'utf-8'
-            )
+            headers[self.span_id_header.encode('utf-8')] = span_id.encode('utf-8')
         if parent_span_id:
-            headers[self.parent_span_id_header.encode(
-                'utf-8'
-            )] = parent_span_id.encode('utf-8')
+            headers[self.parent_span_id_header.encode('utf-8')] = parent_span_id.encode('utf-8')
 
         return headers
 
     def _process_tracing_headers(
-        self,
-        headers: t.List[t.Tuple[bytes, bytes]]
-    ) -> t.Dict[str, t.Optional[str]]:
+            self, headers: t.List[t.Tuple[bytes, bytes]]) -> t.Dict[str, t.Optional[str]]:
         """Process incoming tracing headers and generate new ones as needed."""
         # Extract existing headers
-        incoming_trace_id = self._extract_header_value(
-            headers,
-            self.trace_id_header
-        )
-        incoming_span_id = self._extract_header_value(
-            headers,
-            self.span_id_header
-        )
+        incoming_trace_id = self._extract_header_value(headers, self.trace_id_header)
+        incoming_span_id = self._extract_header_value(headers, self.span_id_header)
 
         # Determine trace ID (generate if root request)
         if incoming_trace_id:
@@ -126,30 +105,19 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         if trace_info["is_root"]:
             trace_msg = ansi_utils.ANSIFormatter.format(
                 f"🌟 {trace_type} trace started: trace={trace_id}, "
-                f"span={span_id}",
-                ansi_utils.ANSIFormatter.FG.BLUE,
-                ansi_utils.ANSIFormatter.STYLE.BOLD
-            )
+                f"span={span_id}", ansi_utils.ANSIFormatter.FG.BLUE,
+                ansi_utils.ANSIFormatter.STYLE.BOLD)
         else:
             trace_msg = ansi_utils.ANSIFormatter.format(
                 f"🔗 {trace_type} trace continued: trace={trace_id}, "
-                f"span={span_id}, parent={parent_span_id}",
-                ansi_utils.ANSIFormatter.FG.CYAN
-            )
+                f"span={span_id}, parent={parent_span_id}", ansi_utils.ANSIFormatter.FG.CYAN)
 
-        self.logger.with_context(
-            trace_id=trace_id,
-            span_id=span_id,
-            parent_span_id=parent_span_id,
-            is_root_trace=trace_info["is_root"]
-        ).debug(trace_msg)
+        self.logger.with_context(trace_id=trace_id,
+                                 span_id=span_id,
+                                 parent_span_id=parent_span_id,
+                                 is_root_trace=trace_info["is_root"]).debug(trace_msg)
 
-    async def __call__(
-        self,
-        scope: types.Scope,
-        receive: types.Receive,
-        send: types.Send
-    ) -> None:
+    async def __call__(self, scope: types.Scope, receive: types.Receive, send: types.Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -163,8 +131,7 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
         self.context[constants.ContextKey.TRACE_ID] = trace_info["trace_id"]
         self.context[constants.ContextKey.SPAN_ID] = trace_info["span_id"]
         if trace_info["parent_span_id"]:
-            self.context[constants.ContextKey.PARENT_SPAN_ID] = trace_info[
-                "parent_span_id"]
+            self.context[constants.ContextKey.PARENT_SPAN_ID] = trace_info["parent_span_id"]
         else:
             # Clear parent span ID if not present
             if constants.ContextKey.PARENT_SPAN_ID in self.context:
@@ -183,10 +150,7 @@ class TraceMiddleware(BaseMiddleware, LoggingTagMixin):
                 # Add all tracing headers
                 for name, value in trace_headers.items():
                     # Only add if not already present (allow app to override)
-                    if not any(
-                        h[0].lower() == name.lower()
-                        for h in message["headers"]
-                    ):
+                    if not any(h[0].lower() == name.lower() for h in message["headers"]):
                         message["headers"].append((name, value))
 
             await send(message)

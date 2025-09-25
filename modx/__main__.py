@@ -1,5 +1,5 @@
 from __future__ import annotations
 
-from modx.cli import main
+from modx._cli import main
 
 main()

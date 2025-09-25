@@ -4,7 +4,8 @@ import typing as t
 
 import starlette.types as types
 
-from modx import constants, utils
+from modx import constants
+from modx import utils
 from modx.config.middleware.security import SecurityConfig
 from modx.context import Context
 from modx.helpers.mixin import LoggingTagMixin
@@ -22,14 +23,8 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
     """
     __logging_tag__ = 'modx.http.middlewares.security'
 
-    def __init__(
-        self,
-        app: types.ASGIApp,
-        *,
-        logger: Logger,
-        context: Context,
-        config: SecurityConfig,
-    ):
+    def __init__(self, app: types.ASGIApp, *, logger: Logger, context: Context,
+                 config: SecurityConfig):
         BaseMiddleware.__init__(self, app)
         LoggingTagMixin.__init__(self, logger)
 
@@ -67,31 +62,20 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
 
         return headers
 
-    def _log_headers(
-        self,
-        response_headers: t.List[t.Tuple[bytes, bytes]]
-    ) -> None:
+    def _log_headers(self, response_headers: t.List[t.Tuple[bytes, bytes]]) -> None:
         headers_dict = {
             k.decode("utf-8"): v.decode("utf-8")
             for k, v in response_headers
-            if k.startswith(b"X-") or k in (b"Cache-Control",
-                                            b"Strict-Transport-Security")
+            if k.startswith(b"X-") or k in (b"Cache-Control", b"Strict-Transport-Security")
         }
 
         if headers_dict:
             header_str = ansi_utils.ANSIFormatter.format(
                 f"Applied API security headers: "
-                f"{', '.join(headers_dict.keys())}",
-                ansi_utils.ANSIFormatter.FG.GREEN
-            )
+                f"{', '.join(headers_dict.keys())}", ansi_utils.ANSIFormatter.FG.GREEN)
             self.logger.debug(header_str)
 
-    async def __call__(
-        self,
-        scope: types.Scope,
-        receive: types.Receive,
-        send: types.Send
-    ) -> None:
+    async def __call__(self, scope: types.Scope, receive: types.Receive, send: types.Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -102,9 +86,8 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
         if self.add_request_id:
             del self.context[constants.ContextKey.REQUEST_ID]
             request_id = utils.gen_id(pref=constants.IDPrefix.REQUEST)
-            security_headers[
-                constants.HeaderKey.REQUEST_ID.encode('utf-8')
-            ] = request_id.encode("utf-8")
+            security_headers[constants.HeaderKey.REQUEST_ID.encode('utf-8')] = request_id.encode(
+                "utf-8")
             self.context[constants.ContextKey.REQUEST_ID] = request_id
 
         async def send_wrapper(message: types.Message) -> None:
@@ -115,10 +98,7 @@ class SecurityMiddleware(BaseMiddleware, LoggingTagMixin):
                 # Add all security headers
                 for name, value in security_headers.items():
                     # Only add if not already present (allow app to override)
-                    if not any(
-                        h[0].lower() == name.lower()
-                        for h in message["headers"]
-                    ):
+                    if not any(h[0].lower() == name.lower() for h in message["headers"]):
                         message["headers"].append((name, value))
 
                 # Log applied headers at debug level

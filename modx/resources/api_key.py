@@ -16,9 +16,7 @@ class APIKey(WatchedResource[t.List[str]], t.Sequence[str]):
 
     def _parse(self) -> t.List[str]:
         content = self.fpath.read_text(encoding='utf-8').strip()
-        return [line.strip()
-                for line in content.splitlines()
-                if line.strip()]
+        return [line.strip() for line in content.splitlines() if line.strip()]
 
     def __contains__(self, key: object, /) -> bool:
         if not isinstance(key, str):

@@ -4,7 +4,8 @@ import typing as t
 
 import pydantic as pydt
 
-from modx import __title__, __version__
+from modx import __title__
+from modx import __version__
 
 
 class PrometheusConfig(pydt.BaseModel):

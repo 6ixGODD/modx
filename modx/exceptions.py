@@ -15,6 +15,7 @@ class ExceptionDetails(te.TypedDict, total=False):
 
 
 class ModXException(Exception):
+
     def __init__(self, msg: str):
         super().__init__(msg)
         self.msg = msg
@@ -88,7 +89,8 @@ class RuntimeException(ModXException):
 
     def __init__(
         self,
-        msg: str, /,
+        msg: str,
+        /,
         *,
         code: constants.BusinessCode = constants.BusinessCode.UNKNOWN_ERROR,
         status_code: int = http.HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -101,20 +103,19 @@ class RuntimeException(ModXException):
         return f"{self.msg} (code: {self.code}, status: {self.status_code})"
 
     def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            f"msg={self.msg!r}, "
-            f"code={self.code!r}, "
-            f"status_code={self.status_code!r}, "
-            f"details={self.details!r})"
-        )
+        return (f"{self.__class__.__name__}("
+                f"msg={self.msg!r}, "
+                f"code={self.code!r}, "
+                f"status_code={self.status_code!r}, "
+                f"details={self.details!r})")
 
 
 class BadRequestError(RuntimeException):
 
     def __init__(
         self,
-        msg: str = http.HTTPStatus.BAD_REQUEST.phrase, /,
+        msg: str = http.HTTPStatus.BAD_REQUEST.phrase,
+        /,
         *,
         code: constants.BusinessCode = constants.BusinessCode.BAD_REQUEST,
     ):
@@ -126,9 +127,11 @@ class BadRequestError(RuntimeException):
 
 
 class InvalidParametersError(BadRequestError):
+
     def __init__(
         self,
-        msg: str = http.HTTPStatus.BAD_REQUEST.phrase, /,
+        msg: str = http.HTTPStatus.BAD_REQUEST.phrase,
+        /,
         *,
         params: t.Dict[str, str] | None = None,
     ):
@@ -140,10 +143,7 @@ class InvalidParametersError(BadRequestError):
 
     @property
     def details(self) -> ExceptionDetails:
-        return ExceptionDetails(
-            message=self.msg,
-            params=self.params
-        )
+        return ExceptionDetails(message=self.msg, params=self.params)
 
     @classmethod
     def from_pydantic_validation_err(
@@ -161,9 +161,11 @@ class InvalidParametersError(BadRequestError):
 
 
 class UnauthorizedError(RuntimeException):
+
     def __init__(
         self,
-        msg: str = http.HTTPStatus.UNAUTHORIZED.phrase, /,
+        msg: str = http.HTTPStatus.UNAUTHORIZED.phrase,
+        /,
         *,
         code: constants.BusinessCode = constants.BusinessCode.UNAUTHORIZED,
     ):
@@ -175,9 +177,11 @@ class UnauthorizedError(RuntimeException):
 
 
 class ForbiddenError(RuntimeException):
+
     def __init__(
         self,
-        msg: str = http.HTTPStatus.FORBIDDEN.phrase, /,
+        msg: str = http.HTTPStatus.FORBIDDEN.phrase,
+        /,
         *,
         code: constants.BusinessCode = constants.BusinessCode.FORBIDDEN,
     ):
@@ -189,9 +193,11 @@ class ForbiddenError(RuntimeException):
 
 
 class NotFoundError(RuntimeException):
+
     def __init__(
         self,
-        msg: str = http.HTTPStatus.NOT_FOUND.phrase, /,
+        msg: str = http.HTTPStatus.NOT_FOUND.phrase,
+        /,
         *,
         code: constants.BusinessCode = constants.BusinessCode.NOT_FOUND,
     ):
@@ -203,12 +209,13 @@ class NotFoundError(RuntimeException):
 
 
 class ServiceUnavailableError(RuntimeException):
+
     def __init__(
         self,
-        msg: str = http.HTTPStatus.SERVICE_UNAVAILABLE.phrase, /,
+        msg: str = http.HTTPStatus.SERVICE_UNAVAILABLE.phrase,
+        /,
         *,
-        code: constants.BusinessCode =
-        constants.BusinessCode.SERVICE_UNAVAILABLE,
+        code: constants.BusinessCode = constants.BusinessCode.SERVICE_UNAVAILABLE,
     ):
         super().__init__(
             msg,

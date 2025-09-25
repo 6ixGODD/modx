@@ -4,8 +4,8 @@ import typing as t
 
 import typing_extensions as te
 
-import modx.resources.models.types as types
 from modx.interface.dtos import BaseModel
+import modx.resources.models.types as types
 
 
 class ChatCompletionContentPartParamsBase(BaseModel):
@@ -31,10 +31,8 @@ class ChatCompletionContentPartImageParams(ChatCompletionContentPartParamsBase):
     where the image can be retrieved."""
 
 
-ChatCompletionContentPartParams = t.Union[
-    ChatCompletionContentPartTextParams,
-    ChatCompletionContentPartImageParams
-]
+ChatCompletionContentPartParams = t.Union[ChatCompletionContentPartTextParams,
+                                          ChatCompletionContentPartImageParams]
 
 
 class ChatCompletionsMessageParams(BaseModel):

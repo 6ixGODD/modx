@@ -105,10 +105,8 @@ class ANSIFormatter:
         plat = sys.platform
         if plat == 'win32':
             # Windows 10 with VT sequences enabled
-            return (os.environ.get('TERM_PROGRAM', '')
-                    or 'ANSICON' in os.environ
-                    or 'WT_SESSION' in os.environ
-                    or os.environ.get('ConEmuANSI') == 'ON')
+            return (os.environ.get('TERM_PROGRAM', '') or 'ANSICON' in os.environ
+                    or 'WT_SESSION' in os.environ or os.environ.get('ConEmuANSI') == 'ON')
 
         # Most Unix-like systems support colors
         return True
@@ -146,39 +144,24 @@ class ANSIFormatter:
 
         # Handle text that already contains reset codes
         if cls.STYLE.RESET in text:
-            text = text.replace(
-                cls.STYLE.RESET,
-                f"{cls.STYLE.RESET}{style_str}"
-            )
+            text = text.replace(cls.STYLE.RESET, f"{cls.STYLE.RESET}{style_str}")
 
         return f"{style_str}{text}{cls.STYLE.RESET}"
 
     @classmethod
     def success(cls, text: str) -> str:
         """Format text as a success message (green, bold)."""
-        return cls.format(
-            text,
-            cls.FG.BRIGHT_GREEN,
-            cls.STYLE.BOLD
-        )
+        return cls.format(text, cls.FG.BRIGHT_GREEN, cls.STYLE.BOLD)
 
     @classmethod
     def error(cls, text: str) -> str:
         """Format text as an error message (red, bold)."""
-        return cls.format(
-            text,
-            cls.FG.BRIGHT_RED,
-            cls.STYLE.BOLD
-        )
+        return cls.format(text, cls.FG.BRIGHT_RED, cls.STYLE.BOLD)
 
     @classmethod
     def warning(cls, text: str) -> str:
         """Format text as a warning message (yellow, bold)."""
-        return cls.format(
-            text,
-            cls.FG.BRIGHT_YELLOW,
-            cls.STYLE.BOLD
-        )
+        return cls.format(text, cls.FG.BRIGHT_YELLOW, cls.STYLE.BOLD)
 
     @classmethod
     def info(cls, text: str) -> str:
@@ -188,21 +171,10 @@ class ANSIFormatter:
     @classmethod
     def highlight(cls, text: str) -> str:
         """Format text as highlighted (magenta, bold)."""
-        return cls.format(
-            text,
-            cls.FG.BRIGHT_MAGENTA,
-            cls.STYLE.BOLD
-        )
+        return cls.format(text, cls.FG.BRIGHT_MAGENTA, cls.STYLE.BOLD)
 
     @classmethod
-    def rgb(
-        cls,
-        text: str,
-        r: int,
-        g: int,
-        b: int,
-        background: bool = False
-    ) -> str:
+    def rgb(cls, text: str, r: int, g: int, b: int, background: bool = False) -> str:
         """
         Format text with a specific RGB color.
 

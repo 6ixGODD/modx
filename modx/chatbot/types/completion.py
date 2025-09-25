@@ -12,12 +12,7 @@ class CompletionMessage(BaseSchema):
 
     __slots__ = ('content', 'refusal')
 
-    def __init__(
-        self,
-        *,
-        content: str | None = None,
-        refusal: str | None = None,
-    ) -> None:
+    def __init__(self, *, content: str | None = None, refusal: str | None = None) -> None:
         self.content = content
         self.refusal = refusal
 
@@ -30,25 +25,16 @@ class Completion(BaseSchema):
     model: str
     usage: Usage | None
 
-    __slots__ = (
-        "id",
-        "message",
-        "finish_reason",
-        "created",
-        "model",
-        "usage",
-    )
+    __slots__ = ("id", "message", "finish_reason", "created", "model", "usage")
 
-    def __init__(
-        self,
-        *,
-        id: str,
-        message: CompletionMessage,
-        finish_reason: t.Literal['stop', 'length', 'content_filter'],
-        created: int,
-        model: str,
-        usage: Usage | None = None,
-    ) -> None:
+    def __init__(self,
+                 *,
+                 id: str,
+                 message: CompletionMessage,
+                 finish_reason: t.Literal['stop', 'length', 'content_filter'],
+                 created: int,
+                 model: str,
+                 usage: Usage | None = None) -> None:
         self.id = id
         self.message: CompletionMessage = message
         self.finish_reason = finish_reason

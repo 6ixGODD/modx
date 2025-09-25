@@ -10,16 +10,14 @@ from modx.service.auth import IAuthService
 
 @t.runtime_checkable
 class IAuthInterface(t.Protocol):
-    async def authenticate(self, api_key: str) -> None: ...
+
+    async def authenticate(self, api_key: str) -> None:
+        ...
 
 
 class AuthInterface(BaseInterface):
-    def __init__(
-        self,
-        *,
-        logger: Logger,
-        auth_service: IAuthService
-    ):
+
+    def __init__(self, *, logger: Logger, auth_service: IAuthService):
         super().__init__(logger)
         self.auth_service = auth_service
 

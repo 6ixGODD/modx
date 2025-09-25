@@ -9,6 +9,7 @@ from modx.logger import Logger
 
 
 class AsyncContextMixin(abc.ABC):
+
     @abc.abstractmethod
     async def init(self) -> None:
         pass
@@ -21,12 +22,8 @@ class AsyncContextMixin(abc.ABC):
         await self.init()
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: t.Type[BaseException] | None,
-        exc_val: BaseException | None,
-        traceback: types.TracebackType | None
-    ) -> t.Literal[False]:
+    async def __aexit__(self, exc_type: t.Type[BaseException] | None, exc_val: BaseException | None,
+                        traceback: types.TracebackType | None) -> t.Literal[False]:
         await self.close()
         if exc_type is not None:
             raise exc_val.with_traceback(traceback) from exc_val
@@ -34,6 +31,7 @@ class AsyncContextMixin(abc.ABC):
 
 
 class ContextMixin(abc.ABC):
+
     @abc.abstractmethod
     def init(self) -> None:
         pass
@@ -46,12 +44,8 @@ class ContextMixin(abc.ABC):
         self.init()
         return self
 
-    def __exit__(
-        self,
-        exc_type: t.Type[BaseException] | None,
-        exc_val: BaseException | None,
-        traceback: types.TracebackType | None
-    ) -> t.Literal[False]:
+    def __exit__(self, exc_type: t.Type[BaseException] | None, exc_val: BaseException | None,
+                 traceback: types.TracebackType | None) -> t.Literal[False]:
         self.close()
         if exc_type is not None:
             raise exc_val.with_traceback(traceback) from exc_val
@@ -63,6 +57,7 @@ _RecvT = t.TypeVar('_RecvT', bound=t.AsyncIterable)
 
 
 class StatelessDuplexMixin(t.Protocol[_SendT, _RecvT]):
+
     async def send(self, data: _SendT) -> None:
         pass
 
@@ -76,9 +71,7 @@ class LoggingTagMixin:
     def __init_subclass__(cls):
         super().__init_subclass__()
         if not inspect.isabstract(cls) and not hasattr(cls, '__logging_tag__'):
-            raise TypeError(
-                f"{cls.__name__} must define __logging_tag__ class variable"
-            )
+            raise TypeError(f"{cls.__name__} must define __logging_tag__ class variable")
 
     def __init__(self, logger: Logger):
         self.logger = logger.with_tag(self.__logging_tag__)

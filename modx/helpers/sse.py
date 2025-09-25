@@ -9,14 +9,13 @@ ItemType: t.TypeAlias = t.Union[str, dict, BaseModel]
 
 
 class SSEStream(t.AsyncIterable[str]):
-    def __init__(
-        self,
-        stream: t.AsyncIterable[ItemType],
-        *,
-        event: str | None = None,
-        end: str | None = '[DONE]',
-        retry: int | None = None,
-    ) -> None:
+
+    def __init__(self,
+                 stream: t.AsyncIterable[ItemType],
+                 *,
+                 event: str | None = None,
+                 end: str | None = '[DONE]',
+                 retry: int | None = None) -> None:
         self.source = stream
         self.event = event
         self.end = end

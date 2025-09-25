@@ -11,12 +11,7 @@ class Message(BaseSchema):
 
     __slots__ = ('role', 'content')
 
-    def __init__(
-        self,
-        *,
-        role: t.Literal['user', 'assistant'],
-        content: str
-    ) -> None:
+    def __init__(self, *, role: t.Literal['user', 'assistant'], content: str) -> None:
         super().__init__()
         self.role = role
         self.content = content

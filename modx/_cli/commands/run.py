@@ -4,13 +4,14 @@ import argparse
 import pathlib as p
 import typing as t
 
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import inject
+from dependency_injector.wiring import Provide
 
-import modx.http.routers.compat
 from modx import config
-from modx.cli.helpers.args import BaseArgs
+from modx._cli.helpers.args import BaseArgs
 from modx.containers import Container
 from modx.http import HTTPServer
+import modx.http.routers.compat
 
 if t.TYPE_CHECKING:
     from argparse import _SubParsersAction
@@ -26,10 +27,7 @@ class Args(BaseArgs):
 
     def _func(self) -> None:
         container = Container()
-        container.wire(
-            modules=[modx.http.routers.compat,
-                     modx.cli.commands.run]
-        )
+        container.wire(modules=[modx.http.routers.compat, modx._cli.commands.run])
 
         c = config.get()
         if self.config:
@@ -59,19 +57,22 @@ class Args(BaseArgs):
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            '--keys-file', '-k',
+            '--keys-file',
+            '-k',
             type=str,
             default=None,
             help='Path to the keys file (default: %(default)s)',
         )
         parser.add_argument(
-            '--models-file', '-m',
+            '--models-file',
+            '-m',
             type=str,
             default=None,
             help='Path to the models file (default: %(default)s)',
         )
         parser.add_argument(
-            '--config', '-c',
+            '--config',
+            '-c',
             type=str,
             default=None,
             help='Path to the config file (default: %(default)s)',

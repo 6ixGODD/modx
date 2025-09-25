@@ -11,18 +11,17 @@ from modx.chatbot.types.stream import AsyncStream
 
 
 class Chatbot(abc.ABC):
+
     @abc.abstractmethod
-    async def chat(
-        self,
-        messages: Messages,
-        *,
-        model: str,
-        stream: bool = False,
-        max_completion_tokens: int | None = None,
-        cache: bool = True,
-        cache_key: str | None = None,
-        chatcmpl_id: str | None = None,
-        toolset: t.Iterable[BaseTool] | None = None,
-        **kwargs: t.Any
-    ) -> AsyncStream[CompletionChunk] | Completion:
+    async def chat(self,
+                   messages: Messages,
+                   *,
+                   model: str,
+                   stream: bool = False,
+                   max_completion_tokens: int | None = None,
+                   cache: bool = True,
+                   cache_key: str | None = None,
+                   chatcmpl_id: str | None = None,
+                   toolset: t.Iterable[BaseTool] | None = None,
+                   **kwargs: t.Any) -> AsyncStream[CompletionChunk] | Completion:
         pass

@@ -47,11 +47,7 @@ def singleton(cls: t.Type[_C]) -> t.Callable[..., _C]:
     return get_instance
 
 
-def gen_id(
-    pref: str = "",
-    suf: str = "",
-    without_hyphen: bool = True
-) -> str:
+def gen_id(pref: str = "", suf: str = "", without_hyphen: bool = True) -> str:
     uuid_str = str(uuid.uuid4())
     if without_hyphen:
         uuid_str = uuid_str.replace("-", "")
@@ -63,6 +59,7 @@ def utc_now() -> dt.datetime:
 
 
 class classproperty(property):
+
     def __get__(self, __instance: t.Any, __owner: type | None = None) -> t.Any:
         return self.fget(__owner)
 
@@ -72,11 +69,7 @@ def _get_func_params(fn: t.Callable) -> t.Set[str]:
     return set(inspect.signature(fn).parameters.keys())
 
 
-def filter_kwargs(
-    fn: t.Callable,
-    kwargs: t.Dict[str, t.Any],
-    pref: str = ""
-) -> t.Dict[str, t.Any]:
+def filter_kwargs(fn: t.Callable, kwargs: t.Dict[str, t.Any], pref: str = "") -> t.Dict[str, t.Any]:
     """
     Filter out invalid keyword arguments for a given function by comparing
     the provided keyword arguments to the function's signature. Only valid
@@ -99,10 +92,7 @@ def filter_kwargs(
         for key, value in kwargs.items():
             if key.startswith(pref):
                 param_name = key[len(pref):]
-                if (
-                    param_name in valid_params
-                    and param_name not in {"self", "cls"}
-                ):
+                if (param_name in valid_params and param_name not in {"self", "cls"}):
                     filtered[param_name] = value
         return filtered
     else:
@@ -115,6 +105,7 @@ def filter_kwargs(
 
 
 class Unset:
+
     def __repr__(self):
         return "<UNSET>"
 
@@ -128,11 +119,10 @@ class Unset:
         return hash("UNSET")
 
 
-def flatten_dict(
-    _dict: t.Mapping[str, t.Any], /,
-    sep: str = '.',
-    _parent: str = '',
-) -> t.Dict[str, t.Any]:
+def flatten_dict(_dict: t.Mapping[str, t.Any],
+                 /,
+                 sep: str = '.',
+                 _parent: str = '') -> t.Dict[str, t.Any]:
     items = []
     for k, v in _dict.items():
         key = f"{_parent}{sep}{k}" if _parent else k

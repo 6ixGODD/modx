@@ -20,11 +20,8 @@ class BaseValueObject(pydt.BaseModel):
 
     @pydt.model_validator(mode='wrap')
     @classmethod
-    def reraise_val_error(
-        cls,
-        data: t.Any,
-        handler: pydt.ModelWrapValidatorHandler[t.Self]
-    ) -> t.Self:
+    def reraise_val_error(cls, data: t.Any,
+                          handler: pydt.ModelWrapValidatorHandler[t.Self]) -> t.Self:
         try:
             return handler(data)
         except pydt.ValidationError as e:
@@ -37,10 +34,8 @@ class ObjectID(BaseValueObject):
     @pydt.model_validator(mode='after')
     def check_object_id(self) -> t.Self:
         if len(self.id) != 24:
-            raise exc.InvalidParametersError(
-                "Invalid object ID",
-                params={"id": "id must be 24 characters long"}
-            )
+            raise exc.InvalidParametersError("Invalid object ID",
+                                             params={"id": "id must be 24 characters long"})
         return self
 
     def to_object_id(self) -> beanie.BeanieObjectId:
@@ -51,14 +46,10 @@ class ObjectID(BaseValueObject):
 
 
 class PaginationParams(BaseValueObject):
-    page: int = pydt.Field(
-        default=1,
-        ge=1,
-        description="Page number for pagination, starting from 1"
-    )
-    limit: int = pydt.Field(
-        default=10,
-        ge=1,
-        le=100,
-        description="Number of items per page, between 1 and 100"
-    )
+    page: int = pydt.Field(default=1,
+                           ge=1,
+                           description="Page number for pagination, starting from 1")
+    limit: int = pydt.Field(default=10,
+                            ge=1,
+                            le=100,
+                            description="Number of items per page, between 1 and 100")

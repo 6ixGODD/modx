@@ -10,26 +10,15 @@ import typing as t
 import pydantic as pydt
 
 # JSON serializable types
-JsonPrimitive = t.Union[str, int, float, bool, None]
+JsonPrimitive: t.TypeAlias = t.Union[str, int, float, bool, None]
 
 if t.TYPE_CHECKING:
-    JsonValue = t.Union[
-        JsonPrimitive,
-        t.Dict[str, 'JsonValue'],
-        t.List['JsonValue']
-    ]
+    JsonValue: t.TypeAlias = t.Union[JsonPrimitive, t.Dict[str, 'JsonValue'], t.List['JsonValue']]
 else:
-    JsonValue = t.Any
+    JsonValue: t.TypeAlias = t.Any
 
 # JSON Schema types
-JsonSchemaType = t.Literal[
-    "string",
-    "integer",
-    "number",
-    "boolean",
-    "array",
-    "object"
-]
+JsonSchemaType: t.TypeAlias = t.Literal["string", "integer", "number", "boolean", "array", "object"]
 
 
 class PropertySchema(pydt.BaseModel):
@@ -69,15 +58,11 @@ class ParameterSchema(pydt.BaseModel):
 
 
 class FunctionSchema(pydt.BaseModel):
-    name: t.Annotated[
-        str,
-        pydt.Field(
-            min_length=1,
-            max_length=64,
-            description="The name of the function to be called by the tool.",
-            examples=["get_weather", "calculate_sum"]
-        )
-    ]
+    name: t.Annotated[str,
+                      pydt.Field(min_length=1,
+                                 max_length=64,
+                                 description="The name of the function to be called by the tool.",
+                                 examples=["get_weather", "calculate_sum"])]
     """The name of the function to be called by the tool."""
 
     description: str
@@ -99,41 +84,26 @@ class ToolSchema(pydt.BaseModel):
 
 
 class Property:
-    __slots__ = (
-        'description',
-        'enums',
-        'minimum',
-        'maximum',
-        'min_length',
-        'max_length',
-        'pattern',
-        'format',
-        'default',
-        'examples',
-        'min_items',
-        'max_items',
-        'unique_items',
-        'extra'
-    )
+    __slots__ = ('description', 'enums', 'minimum', 'maximum', 'min_length', 'max_length',
+                 'pattern', 'format', 'default', 'examples', 'min_items', 'max_items',
+                 'unique_items', 'extra')
 
-    def __init__(
-        self,
-        *,
-        description: str | None = None,
-        enums: t.List[JsonValue] | None = None,
-        minimum: int | float | None = None,
-        maximum: int | float | None = None,
-        min_length: int | None = None,
-        max_length: int | None = None,
-        pattern: str | None = None,
-        format: str | None = None,
-        default: JsonValue | None = None,
-        examples: t.List[JsonValue] | None = None,
-        min_items: int | None = None,
-        max_items: int | None = None,
-        unique_items: bool | None = None,
-        **kwargs: JsonValue
-    ):
+    def __init__(self,
+                 *,
+                 description: str | None = None,
+                 enums: t.List[JsonValue] | None = None,
+                 minimum: int | float | None = None,
+                 maximum: int | float | None = None,
+                 min_length: int | None = None,
+                 max_length: int | None = None,
+                 pattern: str | None = None,
+                 format: str | None = None,
+                 default: JsonValue | None = None,
+                 examples: t.List[JsonValue] | None = None,
+                 min_items: int | None = None,
+                 max_items: int | None = None,
+                 unique_items: bool | None = None,
+                 **kwargs: JsonValue):
         self.description = description
         self.enums = enums
         self.minimum = minimum
@@ -221,9 +191,7 @@ def _get_literal_enum_values(python_type: type) -> t.List[JsonValue] | None:
     return None
 
 
-def _extract_property_from_annotation(
-    annotation: t.Any
-) -> t.Tuple[type, Property | None]:
+def _extract_property_from_annotation(annotation: t.Any) -> t.Tuple[type, Property | None]:
     """Extract the actual type and Property descriptor from a type
     annotation."""
     if t.get_origin(annotation) is t.Annotated:
@@ -280,9 +248,7 @@ class BaseTool(abc.ABC):
 
             actual_annotation = type_hints[param_name]
             # Extract type and Property descriptor
-            actual_type, prop_desc = (
-                _extract_property_from_annotation(actual_annotation)
-            )
+            actual_type, prop_desc = (_extract_property_from_annotation(actual_annotation))
 
             # Get basic JSON schema type
             json_type = _get_json_schema_type(actual_type)
@@ -292,8 +258,7 @@ class BaseTool(abc.ABC):
                 type=json_type,
                 description=prop_desc.description if prop_desc else None,
                 enum=(prop_desc.enums
-                      if prop_desc and prop_desc.enums
-                      else _get_literal_enum_values(actual_type)),
+                      if prop_desc and prop_desc.enums else _get_literal_enum_values(actual_type)),
                 items=_get_array_items_schema(actual_type),
                 minimum=prop_desc.minimum if prop_desc else None,
                 maximum=prop_desc.maximum if prop_desc else None,
@@ -319,16 +284,11 @@ class BaseTool(abc.ABC):
             if param.default is inspect.Parameter.empty:
                 required.append(param_name)
 
-        return ToolSchema(
-            function=FunctionSchema(
-                name=self.__function_name__,
-                description=self.__function_description__,
-                parameters=ParameterSchema(
-                    properties=properties,
-                    required=required
-                ) if properties else None
-            )
-        )
+        return ToolSchema(function=FunctionSchema(
+            name=self.__function_name__,
+            description=self.__function_description__,
+            parameters=ParameterSchema(properties=properties, required=required
+                                      ) if properties else None))
 
     @property
     def schema_dict(self) -> t.Dict[str, JsonValue]:

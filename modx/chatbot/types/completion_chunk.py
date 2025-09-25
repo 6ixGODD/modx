@@ -10,17 +10,9 @@ class CompletionChunkDelta(BaseSchema):
     content: str | None
     refusal: str | None
 
-    __slots__ = (
-        'content',
-        'refusal',
-    )
+    __slots__ = ('content', 'refusal')
 
-    def __init__(
-        self,
-        *,
-        content: str | None = None,
-        refusal: str | None = None,
-    ) -> None:
+    def __init__(self, *, content: str | None = None, refusal: str | None = None) -> None:
         self.content = content
         self.refusal = refusal
 
@@ -33,26 +25,16 @@ class CompletionChunk(BaseSchema):
     model: str
     usage: Usage | None
 
-    __slots__ = (
-        "id",
-        "delta",
-        "finish_reason",
-        "created",
-        "model",
-        "usage",
-    )
+    __slots__ = ("id", "delta", "finish_reason", "created", "model", "usage")
 
-    def __init__(
-        self,
-        *,
-        id: str,
-        delta: CompletionChunkDelta,
-        finish_reason:
-        t.Literal['stop', 'length', 'content_filter'] | None = None,
-        created: int,
-        model: str,
-        usage: Usage | None = None,
-    ) -> None:
+    def __init__(self,
+                 *,
+                 id: str,
+                 delta: CompletionChunkDelta,
+                 finish_reason: t.Literal['stop', 'length', 'content_filter'] | None = None,
+                 created: int,
+                 model: str,
+                 usage: Usage | None = None) -> None:
         self.id = id
         self.delta: CompletionChunkDelta = delta
         self.finish_reason = finish_reason

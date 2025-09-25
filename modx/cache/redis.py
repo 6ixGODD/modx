@@ -7,16 +7,15 @@ import typing as t
 
 import redis
 
-from modx.cache import (
-    CACHE_MISS,
-    CacheMiss,
-    EMPTY,
-    Empty,
-    KVCache,
-    V,
-)
+from modx.cache import CACHE_MISS
+from modx.cache import CacheMiss
+from modx.cache import EMPTY
+from modx.cache import Empty
+from modx.cache import KVCache
+from modx.cache import V
 from modx.config import ModXConfig
-from modx.helpers.mixin import ContextMixin, LoggingTagMixin
+from modx.helpers.mixin import ContextMixin
+from modx.helpers.mixin import LoggingTagMixin
 from modx.logger import Logger
 
 
@@ -55,8 +54,7 @@ class RedisCache(KVCache[V], ContextMixin):
             f"port={self.config.redis.port}, db={self.config.redis.db}",
             redis_host=self.config.redis.host,
             redis_port=self.config.redis.port,
-            redis_db=self.config.redis.db
-        )
+            redis_db=self.config.redis.db)
 
     def add_prefix(self, key: str) -> str:
         """Add cache prefix to key."""
@@ -67,16 +65,10 @@ class RedisCache(KVCache[V], ContextMixin):
         try:
             data = pickle.dumps(value)
 
-            if (
-                self.config.redis.secure_serialization and
-                self.config.redis.secret_key
-            ):
+            if (self.config.redis.secure_serialization and self.config.redis.secret_key):
                 # Create HMAC signature
-                signature = hmac.new(
-                    self.config.redis.secret_key.encode('utf-8'),
-                    data,
-                    hashlib.sha256
-                ).digest()
+                signature = hmac.new(self.config.redis.secret_key.encode('utf-8'), data,
+                                     hashlib.sha256).digest()
 
                 # Prepend signature to data
                 data = signature + data
@@ -92,26 +84,18 @@ class RedisCache(KVCache[V], ContextMixin):
     def deserl(self, data: bytes) -> V:
         """Deserialize value with optional HMAC verification."""
         try:
-            if (
-                self.config.redis.secure_serialization and
-                self.config.redis.secret_key
-            ):
+            if (self.config.redis.secure_serialization and self.config.redis.secret_key):
                 # Extract signature and data
                 if len(data) < 32:  # SHA256 digest is 32 bytes
-                    self.logger.warning(
-                        "Data too short for signed serialization"
-                    )
+                    self.logger.warning("Data too short for signed serialization")
                     raise ValueError("Invalid signed data")
 
                 signature = data[:32]
                 payload = data[32:]
 
                 # Verify signature
-                expected_signature = hmac.new(
-                    self.config.redis.secret_key.encode('utf-8'),
-                    payload,
-                    hashlib.sha256
-                ).digest()
+                expected_signature = hmac.new(self.config.redis.secret_key.encode('utf-8'), payload,
+                                              hashlib.sha256).digest()
 
                 if not hmac.compare_digest(signature, expected_signature):
                     self.logger.warning("HMAC signature verification failed")
@@ -120,9 +104,7 @@ class RedisCache(KVCache[V], ContextMixin):
                 self.logger.debug("HMAC signature verified successfully")
                 return pickle.loads(payload)
             else:
-                self.logger.debug(
-                    "Deserializing value without signature verification"
-                )
+                self.logger.debug("Deserializing value without signature verification")
                 return pickle.loads(data)
         except Exception as e:
             self.logger.error(f"Failed to deserialize value: {e}")
@@ -133,16 +115,10 @@ class RedisCache(KVCache[V], ContextMixin):
         prefixed_key = self.add_prefix(key)
         try:
             marker_data = self.serl(CACHE_MISS)
-            self.client.setex(
-                prefixed_key,
-                self.config.negative_ttl,
-                marker_data
-            )
+            self.client.setex(prefixed_key, self.config.negative_ttl, marker_data)
             self.logger.debug(f"Set negative cache for key: {key}")
         except redis.RedisError as e:
-            self.logger.warning(
-                f"Failed to set negative cache for key {key}: {e}"
-            )
+            self.logger.warning(f"Failed to set negative cache for key {key}: {e}")
 
     def __getitem__(self, key: str) -> V | Empty:
         prefixed_key = self.add_prefix(key)
@@ -152,16 +128,12 @@ class RedisCache(KVCache[V], ContextMixin):
                 try:
                     value = self.deserl(data)
                     if isinstance(value, CacheMiss):
-                        self.logger.debug(
-                            f"Found negative cache for key: {key}"
-                        )
+                        self.logger.debug(f"Found negative cache for key: {key}")
                         return EMPTY
                     self.logger.debug(f"Cache hit for key: {key}")
                     return value
                 except ValueError:
-                    self.logger.warning(
-                        f"Failed to deserialize cached value for key: {key}"
-                    )
+                    self.logger.warning(f"Failed to deserialize cached value for key: {key}")
                     # Delete corrupted data
                     try:
                         self.client.delete(prefixed_key)
@@ -179,11 +151,7 @@ class RedisCache(KVCache[V], ContextMixin):
         prefixed_key = self.add_prefix(key)
         try:
             data = self.serl(value)
-            result = self.client.setex(
-                prefixed_key,
-                self.config.default_ttl,
-                data
-            )
+            result = self.client.setex(prefixed_key, self.config.default_ttl, data)
             if result:
                 self.logger.debug(f"Successfully cached key: {key}")
             else:
@@ -242,9 +210,7 @@ class RedisCache(KVCache[V], ContextMixin):
             self.logger.debug(f"Key existence check for {key}: {exists}")
             return exists
         except redis.RedisError as e:
-            self.logger.error(
-                f"Redis error when checking key existence {key}: {e}"
-            )
+            self.logger.error(f"Redis error when checking key existence {key}: {e}")
             return False
 
     def get(self, key: str, default: V | None = None, /) -> V | None:
@@ -269,9 +235,7 @@ class RedisCache(KVCache[V], ContextMixin):
                         self.logger.debug(f"Key {key} in negative cache")
                         return default
                     # Key exists with real value
-                    self.logger.debug(
-                        f"Key {key} exists, returning cached value"
-                    )
+                    self.logger.debug(f"Key {key} exists, returning cached value")
                     return value
                 except ValueError:
                     # Corrupted data, delete and continue
@@ -322,9 +286,7 @@ class RedisCache(KVCache[V], ContextMixin):
                         self.logger.debug(f"Successfully popped key: {key}")
                         return value
                     except ValueError:
-                        self.logger.warning(
-                            f"Failed to deserialize popped value for key: {key}"
-                        )
+                        self.logger.warning(f"Failed to deserialize popped value for key: {key}")
                         return default
             self.logger.debug(f"Key not found for pop operation: {key}")
             return default
@@ -347,9 +309,7 @@ class RedisCache(KVCache[V], ContextMixin):
                     original_key = key_str[len(self.config.pref):]
                     value = self.pop(original_key)
                     if value is not None:
-                        self.logger.debug(
-                            f"Successfully popped item: {original_key}"
-                        )
+                        self.logger.debug(f"Successfully popped item: {original_key}")
                         return original_key, value
 
             self.logger.debug("No items to pop")
@@ -362,12 +322,7 @@ class RedisCache(KVCache[V], ContextMixin):
         """Set a key-value pair (alias for __setitem__)."""
         self[key] = value
 
-    def setx(
-        self,
-        key: str,
-        value: V, /,
-        ttl: int | None = None
-    ) -> None:
+    def setx(self, key: str, value: V, /, ttl: int | None = None) -> None:
         """Set a key-value pair with optional TTL."""
         prefixed_key = self.add_prefix(key)
         try:
@@ -399,9 +354,7 @@ class RedisCache(KVCache[V], ContextMixin):
                 self.logger.debug(f"Key {key} TTL: {result}")
                 return result
         except redis.RedisError as e:
-            self.logger.error(
-                f"Redis error when getting TTL for key {key}: {e}"
-            )
+            self.logger.error(f"Redis error when getting TTL for key {key}: {e}")
             return None
 
     def expire(self, key: str, /, ttl: int | None = None) -> None:
@@ -411,36 +364,26 @@ class RedisCache(KVCache[V], ContextMixin):
             if ttl is not None:
                 result = self.client.expire(prefixed_key, ttl)
                 if result:
-                    self.logger.debug(
-                        f"Set expiration for key {key}: {ttl} seconds"
-                    )
+                    self.logger.debug(f"Set expiration for key {key}: {ttl} seconds")
                 else:
-                    self.logger.warning(
-                        f"Failed to set expiration for key {key} (key may not "
-                        f"exist)"
-                    )
+                    self.logger.warning(f"Failed to set expiration for key {key} (key may not "
+                                        f"exist)")
             else:
                 result = self.client.persist(prefixed_key)
                 if result:
                     self.logger.debug(f"Removed expiration for key: {key}")
                 else:
-                    self.logger.warning(
-                        f"Failed to remove expiration for key {key} (key may "
-                        f"not exist)"
-                    )
+                    self.logger.warning(f"Failed to remove expiration for key {key} (key may "
+                                        f"not exist)")
         except redis.RedisError as e:
-            self.logger.error(
-                f"Redis error when setting expiration for key {key}: {e}"
-            )
+            self.logger.error(f"Redis error when setting expiration for key {key}: {e}")
 
     def incr(self, key: str, /, amount: int = 1) -> int:
         """Increment a key's value."""
         prefixed_key = self.add_prefix(key)
         try:
             result = self.client.incr(prefixed_key, amount)
-            self.logger.debug(
-                f"Incremented key {key} by {amount}, result: {result}"
-            )
+            self.logger.debug(f"Incremented key {key} by {amount}, result: {result}")
             return result
         except redis.RedisError as e:
             self.logger.error(f"Redis error when incrementing key {key}: {e}")
@@ -451,9 +394,7 @@ class RedisCache(KVCache[V], ContextMixin):
         prefixed_key = self.add_prefix(key)
         try:
             result = self.client.decr(prefixed_key, amount)
-            self.logger.debug(
-                f"Decremented key {key} by {amount}, result: {result}"
-            )
+            self.logger.debug(f"Decremented key {key} by {amount}, result: {result}")
             return result
         except redis.RedisError as e:
             self.logger.error(f"Redis error when decrementing key {key}: {e}")

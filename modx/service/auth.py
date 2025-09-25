@@ -9,10 +9,13 @@ from modx.service import BaseService
 
 @t.runtime_checkable
 class IAuthService(t.Protocol):
-    async def authenticate(self, api_key: str) -> bool: ...
+
+    async def authenticate(self, api_key: str) -> bool:
+        ...
 
 
 class AuthService(BaseService):
+
     def __init__(self, logger: Logger, api_key: APIKey):
         super().__init__(logger)
         self.api_key = api_key

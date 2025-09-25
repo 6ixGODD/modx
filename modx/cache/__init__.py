@@ -84,6 +84,7 @@ V = t.TypeVar('V')
 
 
 class KVCache(t.MutableMapping[str, V], LoggingTagMixin):
+
     @abc.abstractmethod
     def __getitem__(self, key: str) -> V | Empty:
         """Retrieve an item from the cache by key."""
@@ -146,12 +147,7 @@ class KVCache(t.MutableMapping[str, V], LoggingTagMixin):
         pass
 
     @abc.abstractmethod
-    def setx(
-        self,
-        key: str,
-        value: V, /,
-        ttl: int | None = None
-    ) -> None:
+    def setx(self, key: str, value: V, /, ttl: int | None = None) -> None:
         """Set an item in the cache with the specified key, value, and
         optional time-to-live (TTL)."""
         pass

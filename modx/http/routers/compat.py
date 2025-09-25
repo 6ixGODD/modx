@@ -1,18 +1,17 @@
 import typing as t
 
+from dependency_injector.wiring import inject
+from dependency_injector.wiring import Provide
 import fastapi
-from dependency_injector.wiring import inject, Provide
 
 from modx.containers import Container
 from modx.helpers.sse import SSEStream
 from modx.interface.compat import ICompatInterface
-from modx.interface.dtos.compat import (
-    ChatCompletion,
-    ChatCompletionChunk,
-    ChatCompletionParams,
-    Model,
-    ModelList,
-)
+from modx.interface.dtos.compat import ChatCompletion
+from modx.interface.dtos.compat import ChatCompletionChunk
+from modx.interface.dtos.compat import ChatCompletionParams
+from modx.interface.dtos.compat import Model
+from modx.interface.dtos.compat import ModelList
 
 router = fastapi.APIRouter(prefix='/compat')
 
@@ -25,13 +24,8 @@ router = fastapi.APIRouter(prefix='/compat')
 @inject
 async def chat_completions(
     body: ChatCompletionParams = fastapi.Body(...),
-    compat: ICompatInterface = fastapi.Depends(
-        Provide[Container.interfaces.compat]
-    ),
-) -> t.Union[
-    fastapi.responses.JSONResponse,
-    fastapi.responses.StreamingResponse
-]:
+    compat: ICompatInterface = fastapi.Depends(Provide[Container.interfaces.compat]),
+) -> t.Union[fastapi.responses.JSONResponse, fastapi.responses.StreamingResponse]:
     completion = await compat.chat_completions(body)
     if isinstance(completion, t.AsyncIterable):
         return fastapi.responses.StreamingResponse(
@@ -52,9 +46,7 @@ async def chat_completions(
 )
 @inject
 async def list_models(
-    compat: ICompatInterface = fastapi.Depends(
-        Provide[Container.interfaces.compat]
-    ),
+    compat: ICompatInterface = fastapi.Depends(Provide[Container.interfaces.compat]),
 ) -> fastapi.responses.JSONResponse:
     models = await compat.list_models()
     return fastapi.responses.JSONResponse(
@@ -71,9 +63,7 @@ async def list_models(
 @inject
 async def retrieve_model(
     model_id: str = fastapi.Path(..., min_length=1, max_length=100),
-    compat: ICompatInterface = fastapi.Depends(
-        Provide[Container.interfaces.compat]
-    ),
+    compat: ICompatInterface = fastapi.Depends(Provide[Container.interfaces.compat]),
 ) -> fastapi.responses.JSONResponse:
     model = await compat.retrieve_model(model_id)
     return fastapi.responses.JSONResponse(

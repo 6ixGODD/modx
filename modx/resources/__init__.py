@@ -13,14 +13,12 @@ from modx.logger import Logger
 
 
 class FileHandler(evt.FileSystemEventHandler):
+
     def __init__(self, callback: t.Callable[[], None], fpath: p.Path):
         self.callback = callback
         self.fpath = fpath
 
-    def on_modified(
-        self,
-        event: evt.FileModifiedEvent | evt.DirModifiedEvent
-    ) -> None:
+    def on_modified(self, event: evt.FileModifiedEvent | evt.DirModifiedEvent) -> None:
         if not event.is_directory and p.Path(event.src_path) == self.fpath:
             self.callback()
 
@@ -29,6 +27,7 @@ T = t.TypeVar('T')
 
 
 class WatchedResource(abc.ABC, LoggingTagMixin, t.Generic[T]):
+
     def __init__(self, fpath: str | p.Path, logger: Logger):
         LoggingTagMixin.__init__(self, logger)
         self.fpath = p.Path(fpath)
@@ -52,27 +51,19 @@ class WatchedResource(abc.ABC, LoggingTagMixin, t.Generic[T]):
                 self.data = data
                 self.logger.info(f"Loaded data from file: {self.fpath}")
         except Exception as e:
-            self.logger.error(
-                f"Failed to load data from file: {self.fpath} - {e}",
-            )
+            self.logger.error(f"Failed to load data from file: {self.fpath} - {e}",)
             if self.backup is not None:
                 self.logger.info("Rolling back to previous data")
                 self.data = self.backup
 
     def watch(self) -> None:
         if not self.fpath.exists():
-            self.logger.warning(
-                f"File does not exist: {self.fpath}, skipping watch"
-            )
+            self.logger.warning(f"File does not exist: {self.fpath}, skipping watch")
             return
 
         self.observer = obsrv.Observer()
         handler = FileHandler(self.load, self.fpath)
-        self.observer.schedule(
-            handler,
-            str(self.fpath.parent),
-            recursive=False
-        )
+        self.observer.schedule(handler, str(self.fpath.parent), recursive=False)
         self.observer.start()
         self.logger.info(f"Monitoring file: {self.fpath}")
 

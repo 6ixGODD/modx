@@ -32,12 +32,14 @@ dependencies = [
 test = [
     "pytest (>=8.4.1,<9.0.0)",
     "pytest-asyncio (>=1.1.0,<2.0.0)",
-    "mypy (>=1.17.1,<2.0.0)"
+    "mypy (>=1.17.1,<2.0.0)",
+    "pytest-cov (>=7.0.0,<8.0.0)",
+    "pytest-mock (>=3.15.1,<4.0.0)"
 ]
-dev = ["loguru (>=0.7.3,<0.8.0)"]
+dev = ["loguru (>=0.7.3,<0.8.0)", "yapf (>=0.43.0,<0.44.0)", "pylint (>=3.3.8,<4.0.0)", "isort (>=6.0.1,<7.0.0)"]
 
-[project.scripts]
-module = "module.__main__:main"
+[tool.poetry.scripts]
+modx = "modx._cli:main"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

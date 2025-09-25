@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dependency_injector import containers, providers
+from dependency_injector import containers
+from dependency_injector import providers
 
 import modx.cache
 import modx.cache.redis
@@ -25,10 +26,7 @@ import modx.service.compat
 class InfrastructureContainer(containers.DeclarativeContainer):
     config: modx.config.ModXConfig = providers.Singleton(modx.config.get)
     context: modx.context.Context = providers.Singleton(modx.context.Context)
-    logger: modx.logger.Logger = providers.Singleton(
-        modx.logger.Logger,
-        config=config
-    )
+    logger: modx.logger.Logger = providers.Singleton(modx.logger.Logger, config=config)
     api_key: modx.resources.api_key.APIKey = providers.Singleton(
         modx.resources.api_key.APIKey,
         config=config,
@@ -61,56 +59,42 @@ class InfrastructureContainer(containers.DeclarativeContainer):
 class ServiceContainer(containers.DeclarativeContainer):
     infrastructure: InfrastructureContainer = providers.DependenciesContainer()
 
-    auth: modx.service.auth.IAuthService = (
-        providers.Singleton(
-            modx.service.auth.AuthService,
-            logger=infrastructure.logger,
-            api_key=infrastructure.api_key,
-        )
-    )
-    compat: modx.service.compat.ICompatService = (
-        providers.Singleton(
-            modx.service.compat.CompatService,
-            logger=infrastructure.logger,
-            chatbot=infrastructure.chatbot,
-            models=infrastructure.models,
-        )
-    )
+    auth: modx.service.auth.IAuthService = (providers.Singleton(
+        modx.service.auth.AuthService,
+        logger=infrastructure.logger,
+        api_key=infrastructure.api_key,
+    ))
+    compat: modx.service.compat.ICompatService = (providers.Singleton(
+        modx.service.compat.CompatService,
+        logger=infrastructure.logger,
+        chatbot=infrastructure.chatbot,
+        models=infrastructure.models,
+    ))
 
 
 class InterfaceContainer(containers.DeclarativeContainer):
     infrastructure: InfrastructureContainer = providers.DependenciesContainer()
     services: ServiceContainer = providers.DependenciesContainer()
 
-    auth: modx.interface.auth.IAuthInterface = (
-        providers.Singleton(
-            modx.interface.auth.AuthInterface,
-            logger=infrastructure.logger,
-            auth_service=services.auth,
-        )
-    )
-    compat: modx.interface.compat.ICompatInterface = (
-        providers.Singleton(
-            modx.interface.compat.CompatInterface,
-            logger=infrastructure.logger,
-            compat_service=services.compat,
-        )
-    )
+    auth: modx.interface.auth.IAuthInterface = (providers.Singleton(
+        modx.interface.auth.AuthInterface,
+        logger=infrastructure.logger,
+        auth_service=services.auth,
+    ))
+    compat: modx.interface.compat.ICompatInterface = (providers.Singleton(
+        modx.interface.compat.CompatInterface,
+        logger=infrastructure.logger,
+        compat_service=services.compat,
+    ))
 
 
 class Container(containers.DeclarativeContainer):
-    infrastructure: InfrastructureContainer = (
-        providers.Container(InfrastructureContainer)
-    )
-    services: ServiceContainer = providers.Container(
-        ServiceContainer,
-        infrastructure=infrastructure
-    )
-    interfaces: InterfaceContainer = providers.Container(
-        InterfaceContainer,
-        infrastructure=infrastructure,
-        services=services
-    )
+    infrastructure: InfrastructureContainer = (providers.Container(InfrastructureContainer))
+    services: ServiceContainer = providers.Container(ServiceContainer,
+                                                     infrastructure=infrastructure)
+    interfaces: InterfaceContainer = providers.Container(InterfaceContainer,
+                                                         infrastructure=infrastructure,
+                                                         services=services)
     lifespan: modx.http.lifespan.Lifespan = providers.Singleton(
         modx.http.lifespan.Lifespan,
         logger=infrastructure.logger,

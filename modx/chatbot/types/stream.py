@@ -4,21 +4,18 @@ import typing as t
 
 from modx.chatbot.types import BaseSchema
 
-T = t.TypeVar('T', bound=BaseSchema)
-U = t.TypeVar('U')
-V = t.TypeVar('V')
+_T = t.TypeVar('_T', bound=BaseSchema)
+_U = t.TypeVar('_U')
+_V = t.TypeVar('_V')
 
 
-class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
-    def __init__(
-        self,
-        source: t.AsyncIterable[V],
-        mapper: t.Callable[[V], T] | None = None
-    ):
+class AsyncStream(t.AsyncIterable[_T], t.Generic[_T]):
+
+    def __init__(self, source: t.AsyncIterable[_V], mapper: t.Callable[[_V], _T] | None = None):
         self._source = source
         self._mapper = mapper
         self._is_consumed = False
-        self._items: t.List[T] = []
+        self._items: t.List[_T] = []
         self._error: Exception | None = None
         self._completed = False
 
@@ -46,12 +43,13 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
         finally:
             self._completed = True
 
-    async def __anext__(self) -> T:
+    async def __anext__(self) -> _T:
         if not hasattr(self, '_iterator'):
             self._iterator = self.__aiter__()
         return await self._iterator.__anext__()
 
-    def filter(self, predicate: t.Callable[[T], bool]) -> AsyncStream[T]:
+    def filter(self, predicate: t.Callable[[_T], bool]) -> AsyncStream[_T]:
+
         async def filtered_source():
             async for item in self:
                 if predicate(item):
@@ -59,7 +57,8 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(filtered_source())
 
-    def tap(self, action: t.Callable[[T], None]) -> AsyncStream[T]:
+    def tap(self, action: t.Callable[[_T], None]) -> AsyncStream[_T]:
+
         async def tap_source():
             async for item in self:
                 action(item)
@@ -67,14 +66,16 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(tap_source())
 
-    def map(self, mapper: t.Callable[[T], U]) -> AsyncStream[U]:
+    def map(self, mapper: t.Callable[[_T], _U]) -> AsyncStream[_U]:
+
         async def mapped_source():
             async for item in self:
                 yield mapper(item)
 
         return AsyncStream(mapped_source())
 
-    def take(self, n: int) -> AsyncStream[T]:
+    def take(self, n: int) -> AsyncStream[_T]:
+
         async def take_source():
             count = 0
             async for item in self:
@@ -85,7 +86,8 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(take_source())
 
-    def skip(self, n: int) -> AsyncStream[T]:
+    def skip(self, n: int) -> AsyncStream[_T]:
+
         async def skip_source():
             count = 0
             async for item in self:
@@ -96,7 +98,8 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(skip_source())
 
-    def chunk(self, size: int) -> AsyncStream[t.List[T]]:
+    def chunk(self, size: int) -> AsyncStream[t.List[_T]]:
+
         async def chunk_source():
             batch = []
             async for item in self:
@@ -109,7 +112,8 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(chunk_source())
 
-    def take_while(self, predicate: t.Callable[[T], bool]) -> AsyncStream[T]:
+    def take_while(self, predicate: t.Callable[[_T], bool]) -> AsyncStream[_T]:
+
         async def take_while_source():
             async for item in self:
                 if not predicate(item):
@@ -118,7 +122,8 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(take_while_source())
 
-    def enumerate(self, start: int = 0) -> AsyncStream[t.Tuple[int, T]]:
+    def enumerate(self, start: int = 0) -> AsyncStream[t.Tuple[int, _T]]:
+
         async def enumerate_source():
             index = start
             async for item in self:
@@ -127,19 +132,20 @@ class AsyncStream(t.AsyncIterable[T], t.Generic[T]):
 
         return AsyncStream(enumerate_source())
 
-    async def foreach(self, action: t.Callable[[T], t.Awaitable[None]]) -> None:
+    async def foreach(self, action: t.Callable[[_T], t.Awaitable[None]]) -> None:
         async for item in self:
             await action(item)
 
-    async def reduce(self, func: t.Callable[[U, T], U], initial: U) -> U:
+    async def reduce(self, func: t.Callable[[_U, _T], _U], initial: _U) -> _U:
         result = initial
         async for item in self:
             result = func(result, item)
         return result
 
-    async def all(self, predicate: t.Callable[[T], bool] | None = None) -> bool:
+    async def all(self, predicate: t.Callable[[_T], bool] | None = None) -> bool:
         if predicate is None:
-            def predicate(v: T) -> bool:
+
+            def predicate(v: _T) -> bool:
                 return bool(v)
 
         async for item in self:

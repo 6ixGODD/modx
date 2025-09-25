@@ -39,29 +39,14 @@ class RuntimeConfig(BaseModel):
 
 class ModelDefinition(BaseModel):
     id: str = pydt.Field(..., description="The model's unique identifier")
-    created: int = pydt.Field(
-        ...,
-        description="Unix timestamp when model was created"
-    )
-    owned_by: t.Literal['modx'] | str = pydt.Field(
-        default='modx',
-        description="Model owner"
-    )
+    created: int = pydt.Field(..., description="Unix timestamp when model was created")
+    owned_by: t.Literal['modx'] | str = pydt.Field(default='modx', description="Model owner")
 
-    prompt_path: str | None = pydt.Field(
-        None,
-        description="Path to prompt template file"
-    )
+    prompt_path: str | None = pydt.Field(None, description="Path to prompt template file")
 
-    client: OpenAIClientConfig = pydt.Field(
-        ...,
-        description="Configuration for OpenAI client"
-    )
+    client: OpenAIClientConfig = pydt.Field(..., description="Configuration for OpenAI client")
 
-    runtime: RuntimeConfig = pydt.Field(
-        ...,
-        description="Runtime configuration for model"
-    )
+    runtime: RuntimeConfig = pydt.Field(..., description="Runtime configuration for model")
 
 
 class Model(te.TypedDict, total=False):
